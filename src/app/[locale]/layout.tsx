@@ -30,6 +30,8 @@ export async function generateMetadata({
   const title = `${cms.representativeName} • ${cms.jobTitle} | ${cms.companyName}`;
   const description = `${cms.representativeName}, ${cms.jobTitle} at ${cms.companyName} in Ethiopia. Commercial agricultural tractors, implements, and direct on-farm support.`;
 
+  const iconUrl = cms.customLogoUrl || "/api/favicon";
+
   return {
     title: {
       default: title,
@@ -40,6 +42,16 @@ export async function generateMetadata({
     creator: cms.representativeName,
     publisher: cms.companyName,
     metadataBase: new URL("https://tekhaftractors.com"),
+    icons: {
+      icon: [
+        {
+          url: iconUrl,
+          type: cms.customLogoUrl ? "image/png" : "image/svg+xml",
+        },
+      ],
+      shortcut: [iconUrl],
+      apple: [cms.customLogoUrl || "/apple-icon"],
+    },
     alternates: {
       canonical: `https://tekhaftractors.com/${currentLocale}`,
       languages: {

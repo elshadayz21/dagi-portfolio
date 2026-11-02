@@ -4,6 +4,11 @@ import { locales, defaultLocale } from "@/lib/i18n/config";
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Handle direct favicon and touch icon requests by redirecting to the dynamic favicon route
+  if (pathname === "/favicon.ico" || pathname === "/apple-touch-icon.png" || pathname === "/apple-touch-icon-precomposed.png") {
+    return NextResponse.redirect(new URL("/api/favicon", request.url), 307);
+  }
+
   // 1. Skip next internal files, api endpoints, and static public assets
   if (
     pathname.startsWith("/_next") ||
@@ -31,5 +36,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!api|_next/static|_next/image).*)"],
 };

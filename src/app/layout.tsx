@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { getCMSData } from "@/lib/cms-store";
 import "./globals.css";
 
 const inter = Inter({
@@ -7,10 +8,25 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
-export const metadata: Metadata = {
-  title: "Tekhaf Trading • Dagim Melese Tractor Sales Ethiopia",
-  description: "Official tractor sales and agricultural machinery platform for Tekhaf Trading, represented by Dagim Melese in Ethiopia.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const cms = await getCMSData();
+  const iconUrl = cms.customLogoUrl || "/api/favicon";
+
+  return {
+    title: `${cms.representativeName} • ${cms.jobTitle} | ${cms.companyName}`,
+    description: `Official tractor sales and agricultural machinery platform for ${cms.companyName}, represented by ${cms.representativeName} in Ethiopia.`,
+    icons: {
+      icon: [
+        {
+          url: iconUrl,
+          type: cms.customLogoUrl ? "image/png" : "image/svg+xml",
+        },
+      ],
+      shortcut: [iconUrl],
+      apple: [iconUrl],
+    },
+  };
+}
 
 export default function RootLayout({
   children,
