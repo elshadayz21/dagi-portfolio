@@ -15,7 +15,7 @@ interface LeadCaptureFormProps {
 export function LeadCaptureForm({
   currentLocale,
   defaultProductTitle,
-  sourceContext = "Website Inquiry",
+  sourceContext = "General Inquiry",
 }: LeadCaptureFormProps) {
   const dict = getDictionary(currentLocale);
   const [formData, setFormData] = useState({
@@ -33,12 +33,12 @@ export function LeadCaptureForm({
 
   const regions = [
     "Oromia",
-    "Addis Ababa & Outskirts",
+    "Addis Ababa",
     "Amhara Region",
-    "Sidama / Hawassa",
+    "Sidama",
     "Somali Region",
     "Dire Dawa",
-    "Southern Ethiopia / Wolaita",
+    "Southern Ethiopia",
     "Tigray",
     "Benishangul-Gumuz",
     "Gambella",
@@ -67,7 +67,7 @@ export function LeadCaptureForm({
         setStatus("error");
         setErrorMessage(data.error || dict.contactForm.errorMessage);
       }
-    } catch (err) {
+    } catch {
       setStatus("error");
       setErrorMessage(dict.contactForm.errorMessage);
     }
@@ -75,12 +75,12 @@ export function LeadCaptureForm({
 
   if (status === "success") {
     return (
-      <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-8 text-center">
-        <CheckCircle2 className="w-16 h-16 text-emerald-600 mx-auto mb-4" />
-        <h3 className="text-xl font-bold text-emerald-950 mb-2">
-          Inquiry Successfully Sent!
+      <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-8 text-center space-y-3">
+        <CheckCircle2 className="w-12 h-12 text-emerald-600 mx-auto" />
+        <h3 className="text-lg font-bold text-emerald-950">
+          Inquiry Received
         </h3>
-        <p className="text-sm text-emerald-800 leading-relaxed max-w-md mx-auto mb-6">
+        <p className="text-xs sm:text-sm text-emerald-800 max-w-md mx-auto">
           {dict.contactForm.successMessage}
         </p>
         <button
@@ -96,9 +96,9 @@ export function LeadCaptureForm({
               message: "",
             });
           }}
-          className="text-xs font-bold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 px-4 py-2 rounded-lg transition-colors"
+          className="text-xs font-semibold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 px-4 py-2 rounded-lg transition-colors mt-2"
         >
-          Submit Another Request
+          Send Another Message
         </button>
       </div>
     );
@@ -114,9 +114,8 @@ export function LeadCaptureForm({
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {/* Full Name */}
         <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1">
+          <label className="block text-xs font-semibold text-slate-700 mb-1">
             {dict.contactForm.nameLabel} *
           </label>
           <input
@@ -124,14 +123,13 @@ export function LeadCaptureForm({
             required
             value={formData.fullName}
             onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-            placeholder="Ato Tsegaye Bekele"
-            className="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600 bg-white"
+            placeholder="Your Name"
+            className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600 bg-white"
           />
         </div>
 
-        {/* Phone Number */}
         <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1">
+          <label className="block text-xs font-semibold text-slate-700 mb-1">
             {dict.contactForm.phoneLabel} *
           </label>
           <input
@@ -140,35 +138,33 @@ export function LeadCaptureForm({
             value={formData.phone}
             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
             placeholder="0911234567"
-            className="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600 bg-white"
+            className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600 bg-white"
           />
         </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {/* Email Address */}
         <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1">
+          <label className="block text-xs font-semibold text-slate-700 mb-1">
             {dict.contactForm.emailLabel}
           </label>
           <input
             type="email"
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            placeholder="yourname@gmail.com"
-            className="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600 bg-white"
+            placeholder="name@example.com"
+            className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600 bg-white"
           />
         </div>
 
-        {/* Region */}
         <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1">
+          <label className="block text-xs font-semibold text-slate-700 mb-1">
             {dict.contactForm.regionLabel} *
           </label>
           <select
             value={formData.region}
             onChange={(e) => setFormData({ ...formData, region: e.target.value })}
-            className="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600 bg-white"
+            className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600 bg-white"
           >
             {regions.map((r) => (
               <option key={r} value={r}>
@@ -180,28 +176,26 @@ export function LeadCaptureForm({
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {/* Tractor Model */}
         <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1">
+          <label className="block text-xs font-semibold text-slate-700 mb-1">
             {dict.contactForm.productLabel}
           </label>
           <select
             value={formData.productTitle}
             onChange={(e) => setFormData({ ...formData, productTitle: e.target.value })}
-            className="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600 bg-white font-medium"
+            className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600 bg-white"
           >
             {tractorInventory.map((t) => (
               <option key={t.id} value={t.title}>
                 {t.title}
               </option>
             ))}
-            <option value="General Tractor Consultation">General Tractor Consultation</option>
+            <option value="General Consultation">General Tractor Consultation</option>
           </select>
         </div>
 
-        {/* Farm Size */}
         <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1">
+          <label className="block text-xs font-semibold text-slate-700 mb-1">
             {dict.contactForm.farmSizeLabel}
           </label>
           <input
@@ -210,31 +204,29 @@ export function LeadCaptureForm({
             onChange={(e) =>
               setFormData({ ...formData, farmSizeHectares: e.target.value })
             }
-            placeholder="e.g. 50"
-            className="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600 bg-white"
+            placeholder="e.g. 30"
+            className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600 bg-white"
           />
         </div>
       </div>
 
-      {/* Message */}
       <div>
-        <label className="block text-xs font-bold text-slate-700 mb-1">
+        <label className="block text-xs font-semibold text-slate-700 mb-1">
           {dict.contactForm.messageLabel}
         </label>
         <textarea
           rows={3}
           value={formData.message}
           onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-          placeholder="Specify if you require disc ploughs, harrows, trailers, or bank proforma invoices..."
-          className="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600 bg-white"
+          placeholder="Provide any details regarding your farm, machinery requirements, or questions..."
+          className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600 bg-white"
         />
       </div>
 
-      {/* Submit Button */}
       <button
         type="submit"
         disabled={status === "loading"}
-        className="w-full bg-gradient-to-r from-tekhaf-700 to-tekhaf-600 hover:from-tekhaf-800 hover:to-tekhaf-700 text-white font-bold py-3.5 px-6 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 text-sm disabled:opacity-75"
+        className="w-full bg-tekhaf-700 hover:bg-tekhaf-800 text-white font-bold py-3 px-6 rounded-xl transition-colors flex items-center justify-center gap-2 text-xs shadow-sm disabled:opacity-75"
       >
         {status === "loading" ? (
           <>
@@ -248,10 +240,6 @@ export function LeadCaptureForm({
           </>
         )}
       </button>
-
-      <p className="text-[11px] text-slate-500 text-center">
-        🔒 Inquiries are delivered directly to Dagim Melese at Tekhaf Trading. Your contact details are kept strictly confidential.
-      </p>
     </form>
   );
 }

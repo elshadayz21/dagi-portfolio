@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
-import { FloatingContact } from "@/components/floating-contact";
+import { FloatingSocials } from "@/components/floating-socials";
 import { Locale, locales } from "@/lib/i18n/config";
+import { getCMSData, getLiveTractors } from "@/lib/cms-store";
 import {
   getLocalBusinessSchema,
   getFAQSchema,
-  getTestimonialReviewsSchema,
 } from "@/lib/seo/schema";
 
 export async function generateStaticParams() {
@@ -25,49 +25,20 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const currentLocale = (locales.includes(locale as Locale) ? locale : "en") as Locale;
+  const cms = await getCMSData();
 
-  const titles: Record<Locale, string> = {
-    en: "Dagim Melese • Tractor Sales & Agricultural Equipment | Tekhaf Trading Ethiopia",
-    am: "ዳግም መለሰ • የትራክተር ሽያጭ እና የግብርና ማሽነሪዎች | ቴክሃፍ ትሬዲንግ ኢትዮጵያ",
-    or: "Daagim Mallasaa • Gurgurtaa Tiraakterootaa fi Meeshaalee Qonnaa | Tekhaf Trading",
-    so: "Dagim Melese • Iibka Cagafyada iyo Qalabka Beeraha | Tekhaf Trading Itoobiya",
-    sid: "Daagim Mallase • Tiraakiterrete Hiranna Gashshootu Maashine | Tekhaf Trading",
-  };
-
-  const descriptions: Record<Locale, string> = {
-    en: "Leading tractor sales consultant in Ethiopia. Buy Massey Ferguson, Lovol, New Holland, and John Deere tractors with genuine Perkins spare parts, duty-free guidance, and 1-year field warranty.",
-    am: "በኢትዮጵያ ቀዳሚ የትራክተር ሽያጭ አማካሪ። ሜሲ ፈርጉሰን፣ ሎቮል፣ ኒው ሆላንድ እና ጆን ዲር ትራክተሮችን ከኦሪጅናል መለዋወጫዎች፣ ከቀረጥ ነፃ የግዢ ማማከር እና የ1 ዓመት ዋስትና ጋር ይግዙ።",
-    or: "Ogeessa gurgurtaa tiraakterootaa Itoophiyaa keessaa. Tiraakteroota Massey Ferguson, Lovol, New Holland fi John Deere gatii madaalawaan bitadhaa.",
-    so: "Khabiirka iibka cagafyada ee Itoobiya. Iibso cagafyada Massey Ferguson, Lovol, New Holland damaanad buuxda leh.",
-    sid: "Itoophiyu giddo roore tiraakiterrete hiraano. Massey Ferguson, Lovol nna New Holland tiraakiterre dancha woxxanni bitidhe.",
-  };
-
-  const localizedTitle = titles[currentLocale] || titles.en;
-  const localizedDesc = descriptions[currentLocale] || descriptions.en;
+  const title = `${cms.representativeName} • ${cms.jobTitle} | ${cms.companyName}`;
+  const description = `${cms.representativeName}, ${cms.jobTitle} at ${cms.companyName} in Ethiopia. Commercial agricultural tractors, implements, and direct on-farm support.`;
 
   return {
     title: {
-      default: localizedTitle,
-      template: "%s | Tekhaf Trading - Dagim Melese",
+      default: title,
+      template: `%s | ${cms.representativeName} - ${cms.companyName}`,
     },
-    description: localizedDesc,
-    keywords: [
-      "Tractor Ethiopia",
-      "Tractor Sales Ethiopia",
-      "Buy Tractor Ethiopia",
-      "Tekhaf Trading",
-      "Agricultural Equipment Ethiopia",
-      "Farm Machinery Ethiopia",
-      "Tractor Dealer Addis Ababa",
-      "Tractors for Sale Ethiopia",
-      "Dagim Melese Tractor Sales",
-      "Heavy Equipment Ethiopia",
-      "Massey Ferguson 385 Ethiopia",
-      "Lovol Tractor Ethiopia",
-    ],
-    authors: [{ name: "Dagim Melese" }, { name: "Tekhaf Trading" }],
-    creator: "Dagim Melese",
-    publisher: "Tekhaf Trading",
+    description,
+    authors: [{ name: cms.representativeName }, { name: cms.companyName }],
+    creator: cms.representativeName,
+    publisher: cms.companyName,
     metadataBase: new URL("https://tekhaftractors.com"),
     alternates: {
       canonical: `https://tekhaftractors.com/${currentLocale}`,
@@ -83,24 +54,16 @@ export async function generateMetadata({
       type: "website",
       locale: currentLocale,
       url: `https://tekhaftractors.com/${currentLocale}`,
-      title: localizedTitle,
-      description: localizedDesc,
-      siteName: "Tekhaf Trading - Dagim Melese Tractor Sales",
+      title,
+      description,
+      siteName: `${cms.representativeName} - ${cms.companyName}`,
       images: [
         {
-          url: "https://images.unsplash.com/photo-1592878904946-b3cd8ae243d0?auto=format&fit=crop&w=1200&q=80",
+          url: cms.profilePhoto,
           width: 1200,
           height: 630,
-          alt: "Tekhaf Trading Tractor Sales Ethiopia - Dagim Melese",
+          alt: `${cms.representativeName} - ${cms.companyName}`,
         },
-      ],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: localizedTitle,
-      description: localizedDesc,
-      images: [
-        "https://images.unsplash.com/photo-1592878904946-b3cd8ae243d0?auto=format&fit=crop&w=1200&q=80",
       ],
     },
   };
@@ -113,13 +76,14 @@ export default async function LocaleLayout({
   const { locale } = await params;
   const currentLocale = (locales.includes(locale as Locale) ? locale : "en") as Locale;
 
+  const cms = await getCMSData();
+  const tractors = await getLiveTractors();
+
   const localBusinessSchema = getLocalBusinessSchema();
   const faqSchema = getFAQSchema();
-  const reviewsSchema = getTestimonialReviewsSchema();
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F5F9FF] text-[#0c1b2a]">
-      {/* Structured Data JSON-LD Schemas */}
+    <div className="min-h-screen flex flex-col bg-[#F5F9FF] text-[#0c1b2a] antialiased">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
@@ -128,15 +92,37 @@ export default async function LocaleLayout({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(reviewsSchema) }}
+
+      {/* Dynamic Navbar */}
+      <Navbar
+        currentLocale={currentLocale}
+        representativeName={cms.representativeName}
+        jobTitle={cms.jobTitle}
+        companyName={cms.companyName}
+        phoneDisplay={cms.phoneDisplay}
+        phone={cms.phone}
+        customLogoUrl={cms.customLogoUrl}
       />
 
-      <Navbar currentLocale={currentLocale} />
+      {/* Floating Social Icons on the Left (WhatsApp, Telegram, LinkedIn, Phone, Email) */}
+      <FloatingSocials socials={cms.socials} />
+
+      {/* Main Content */}
       <main className="flex-1">{children}</main>
-      <Footer currentLocale={currentLocale} />
-      <FloatingContact />
+
+      {/* Dynamic Footer: tractors and company details from CMS */}
+      <Footer
+        currentLocale={currentLocale}
+        tractors={tractors}
+        representativeName={cms.representativeName}
+        jobTitle={cms.jobTitle}
+        companyName={cms.companyName}
+        officeAddress={cms.officeAddress}
+        phoneDisplay={cms.phoneDisplay}
+        phone={cms.phone}
+        email={cms.email}
+        customLogoUrl={cms.customLogoUrl}
+      />
     </div>
   );
 }

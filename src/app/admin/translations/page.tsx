@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Locale, localeDetails, locales } from "@/lib/i18n/config";
 import { dictionaries } from "@/lib/i18n/dictionaries";
-import { Languages, Save, CheckCircle, Globe } from "lucide-react";
+import { Save, CheckCircle } from "lucide-react";
 
 export default function AdminTranslationsPage() {
   const [selectedLocale, setSelectedLocale] = useState<Locale>("am");
@@ -38,7 +38,7 @@ export default function AdminTranslationsPage() {
           Multilingual CMS Translation Manager
         </h1>
         <p className="text-xs sm:text-sm text-slate-500 mt-1">
-          Edit and refine phrases across English, Amharic (አማርኛ), Afaan Oromoo, Somali (Soomaali), and Sidama (Sidaamu Afoo).
+          Dynamically customize phrases across English, Amharic (አማርኛ), Afaan Oromoo, Somali (Soomaali), and Sidama (Sidaamu Afoo).
         </p>
       </div>
 
@@ -61,7 +61,6 @@ export default function AdminTranslationsPage() {
                 : "bg-white text-slate-700 border border-slate-200 hover:bg-slate-50"
             }`}
           >
-            <span>{localeDetails[loc].flag}</span>
             <span>{localeDetails[loc].nativeLabel}</span>
             <span className="uppercase text-[10px] opacity-75">({loc})</span>
           </button>
@@ -76,53 +75,55 @@ export default function AdminTranslationsPage() {
 
         <div className="space-y-4 text-xs">
           <div>
-            <label className="block font-bold text-slate-700 mb-1">Badge Text</label>
+            <label className="block font-semibold text-slate-700 mb-1">Subheadline Prefix</label>
             <input
               type="text"
-              value={currentDict.hero.badge}
-              onChange={(e) => handleUpdate("hero", "badge", e.target.value)}
+              value={currentDict.hero.subheadlinePrefix}
+              onChange={(e) => handleUpdate("hero", "subheadlinePrefix", e.target.value)}
               className="w-full p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600"
             />
           </div>
 
           <div>
-            <label className="block font-bold text-slate-700 mb-1">Headline (H1)</label>
-            <input
-              type="text"
-              value={currentDict.hero.headline}
-              onChange={(e) => handleUpdate("hero", "headline", e.target.value)}
-              className="w-full p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600 font-bold"
-            />
-          </div>
-
-          <div>
-            <label className="block font-bold text-slate-700 mb-1">Subheadline Description</label>
+            <label className="block font-semibold text-slate-700 mb-1">Consultant Introduction Text</label>
             <textarea
               rows={3}
-              value={currentDict.hero.subheadline}
-              onChange={(e) => handleUpdate("hero", "subheadline", e.target.value)}
-              className="w-full p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600"
+              value={currentDict.hero.consultantIntro}
+              onChange={(e) => handleUpdate("hero", "consultantIntro", e.target.value)}
+              className="w-full p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600 leading-relaxed"
             />
           </div>
 
-          <div>
-            <label className="block font-bold text-slate-700 mb-1">Consultant Introduction Text</label>
-            <textarea
-              rows={2}
-              value={currentDict.hero.consultantIntro}
-              onChange={(e) => handleUpdate("hero", "consultantIntro", e.target.value)}
-              className="w-full p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block font-semibold text-slate-700 mb-1">Contact Button Label</label>
+              <input
+                type="text"
+                value={currentDict.hero.contactButton}
+                onChange={(e) => handleUpdate("hero", "contactButton", e.target.value)}
+                className="w-full p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600"
+              />
+            </div>
+
+            <div>
+              <label className="block font-semibold text-slate-700 mb-1">Browse Tractors Button Label</label>
+              <input
+                type="text"
+                value={currentDict.hero.browseTractors}
+                onChange={(e) => handleUpdate("hero", "browseTractors", e.target.value)}
+                className="w-full p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600"
+              />
+            </div>
           </div>
         </div>
 
         <h2 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-2 pt-4">
-          Common CTA Buttons
+          Common Action Labels
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
           <div>
-            <label className="block font-bold text-slate-700 mb-1">Call Now Button</label>
+            <label className="block font-semibold text-slate-700 mb-1">Call Button</label>
             <input
               type="text"
               value={currentDict.common.callNow}
@@ -132,27 +133,27 @@ export default function AdminTranslationsPage() {
           </div>
 
           <div>
-            <label className="block font-bold text-slate-700 mb-1">WhatsApp Chat Button</label>
+            <label className="block font-semibold text-slate-700 mb-1">Contact Dagim Label</label>
             <input
               type="text"
-              value={currentDict.common.chatWhatsapp}
-              onChange={(e) => handleUpdate("common", "chatWhatsapp", e.target.value)}
+              value={currentDict.common.contactDagim}
+              onChange={(e) => handleUpdate("common", "contactDagim", e.target.value)}
               className="w-full p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600"
             />
           </div>
 
           <div>
-            <label className="block font-bold text-slate-700 mb-1">Request Quote Button</label>
+            <label className="block font-semibold text-slate-700 mb-1">Send Inquiry Button</label>
             <input
               type="text"
-              value={currentDict.common.requestQuote}
-              onChange={(e) => handleUpdate("common", "requestQuote", e.target.value)}
+              value={currentDict.common.sendInquiry}
+              onChange={(e) => handleUpdate("common", "sendInquiry", e.target.value)}
               className="w-full p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600"
             />
           </div>
 
           <div>
-            <label className="block font-bold text-slate-700 mb-1">In Stock Badge Label</label>
+            <label className="block font-semibold text-slate-700 mb-1">In Stock Badge</label>
             <input
               type="text"
               value={currentDict.common.inStock}
@@ -164,10 +165,10 @@ export default function AdminTranslationsPage() {
 
         <button
           type="submit"
-          className="bg-tekhaf-700 hover:bg-tekhaf-800 text-white font-bold py-2.5 px-6 rounded-xl text-xs flex items-center gap-2 shadow-sm transition-all"
+          className="bg-tekhaf-700 hover:bg-tekhaf-800 text-white font-bold py-2.5 px-6 rounded-xl text-xs flex items-center gap-2 shadow-sm transition-colors"
         >
           <Save className="w-4 h-4" />
-          <span>Save {localeDetails[selectedLocale].label} Phrases</span>
+          <span>Save {localeDetails[selectedLocale].nativeLabel} Phrases</span>
         </button>
       </form>
     </div>
