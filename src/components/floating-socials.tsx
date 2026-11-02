@@ -1,5 +1,3 @@
-"use client";
-
 import { MessageSquare, Phone, Mail } from "lucide-react";
 
 interface FloatingSocialsProps {

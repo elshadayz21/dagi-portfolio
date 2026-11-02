@@ -77,7 +77,9 @@ export default async function ProductDetailsPage({
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
       <script
+        id="schema-product"
         type="application/ld+json"
+        suppressHydrationWarning
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
       />
 

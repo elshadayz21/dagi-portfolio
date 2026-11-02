@@ -134,7 +134,7 @@ export function Footer({
 
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-          <p>
+          <p suppressHydrationWarning>
             © {new Date().getFullYear()} {representativeName}. {jobTitle} at {companyName}. {dict.common.allRightsReserved}
           </p>
           <div className="flex items-center gap-4">

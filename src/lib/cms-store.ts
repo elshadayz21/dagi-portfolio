@@ -47,26 +47,47 @@ let inMemoryCMS: SiteCMSData = {
 
 let inMemoryInventory: TractorProduct[] = [...tractorInventory];
 
+let dbAvailable: boolean | null = null;
+let lastDbCheck = 0;
+
+async function canQueryDb(): Promise<boolean> {
+  const now = Date.now();
+  if (dbAvailable === false && now - lastDbCheck < 60000) {
+    return false;
+  }
+  try {
+    lastDbCheck = now;
+    await prisma.$queryRaw`SELECT 1`;
+    dbAvailable = true;
+    return true;
+  } catch {
+    dbAvailable = false;
+    return false;
+  }
+}
+
 export async function getCMSData(): Promise<SiteCMSData> {
   try {
-    const setting = await prisma.siteSetting.findFirst();
-    const profile = await prisma.profile.findFirst();
+    if (await canQueryDb()) {
+      const setting = await prisma.siteSetting.findFirst();
+      const profile = await prisma.profile.findFirst();
 
-    if (profile || setting) {
-      return {
-        ...inMemoryCMS,
-        representativeName: profile?.fullName || inMemoryCMS.representativeName,
-        jobTitle: profile?.jobTitle || inMemoryCMS.jobTitle,
-        companyName: profile?.companyName || setting?.companyName || inMemoryCMS.companyName,
-        phone: profile?.phone || inMemoryCMS.phone,
-        email: profile?.email || inMemoryCMS.email,
-        officeAddress: profile?.address || inMemoryCMS.officeAddress,
-        profilePhoto: profile?.profilePhoto || inMemoryCMS.profilePhoto,
-        biography: profile?.biography || inMemoryCMS.biography,
-      };
+      if (profile || setting) {
+        return {
+          ...inMemoryCMS,
+          representativeName: profile?.fullName || inMemoryCMS.representativeName,
+          jobTitle: profile?.jobTitle || inMemoryCMS.jobTitle,
+          companyName: profile?.companyName || setting?.companyName || inMemoryCMS.companyName,
+          phone: profile?.phone || inMemoryCMS.phone,
+          email: profile?.email || inMemoryCMS.email,
+          officeAddress: profile?.address || inMemoryCMS.officeAddress,
+          profilePhoto: profile?.profilePhoto || inMemoryCMS.profilePhoto,
+          biography: profile?.biography || inMemoryCMS.biography,
+        };
+      }
     }
   } catch {
-    // Smooth fallback to memory
+    dbAvailable = false;
   }
   return inMemoryCMS;
 }
@@ -85,40 +106,42 @@ export async function updateCMSData(updates: Partial<SiteCMSData>): Promise<Site
 
 export async function getLiveTractors(): Promise<TractorProduct[]> {
   try {
-    const dbProducts = await prisma.product.findMany({
-      include: { images: true },
-      orderBy: { createdAt: "desc" },
-    });
+    if (await canQueryDb()) {
+      const dbProducts = await prisma.product.findMany({
+        include: { images: true },
+        orderBy: { createdAt: "desc" },
+      });
 
-    if (dbProducts && dbProducts.length > 0) {
-      return dbProducts.map((p) => ({
-        id: p.id,
-        slug: p.slug,
-        title: p.title,
-        brand: p.brand,
-        modelNumber: p.modelNumber,
-        horsepower: p.horsepower,
-        engineType: p.engineType,
-        fuelType: p.fuelType,
-        transmission: p.transmission,
-        driveType: p.driveType as "2WD" | "4WD",
-        hydraulicLift: p.hydraulicLift || "2,000 kg",
-        ptoSpeed: p.ptoSpeed || "540 RPM",
-        priceETB: p.price ? Number(p.price) : 3500000,
-        priceFormatted: p.price ? `ETB ${Number(p.price).toLocaleString()}` : "Inquire",
-        availability: p.availability as TractorProduct["availability"],
-        isFeatured: p.isFeatured,
-        image: p.images[0]?.url || "https://images.unsplash.com/photo-1592878904946-b3cd8ae243d0?auto=format&fit=crop&w=1000&q=80",
-        gallery: p.images.map((img) => img.url),
-        summary: p.summary,
-        description: p.description,
-        keyBenefits: p.keyBenefits,
-        specs: (p.specifications as Record<string, string>) || {},
-        bestForRegions: ["Oromia", "Amhara", "Sidama", "Somali Region"],
-      }));
+      if (dbProducts && dbProducts.length > 0) {
+        return dbProducts.map((p) => ({
+          id: p.id,
+          slug: p.slug,
+          title: p.title,
+          brand: p.brand,
+          modelNumber: p.modelNumber,
+          horsepower: p.horsepower,
+          engineType: p.engineType,
+          fuelType: p.fuelType,
+          transmission: p.transmission,
+          driveType: p.driveType as "2WD" | "4WD",
+          hydraulicLift: p.hydraulicLift || "2,000 kg",
+          ptoSpeed: p.ptoSpeed || "540 RPM",
+          priceETB: p.price ? Number(p.price) : 3500000,
+          priceFormatted: p.price ? `ETB ${Number(p.price).toLocaleString()}` : "Inquire",
+          availability: p.availability as TractorProduct["availability"],
+          isFeatured: p.isFeatured,
+          image: p.images[0]?.url || "https://images.unsplash.com/photo-1592878904946-b3cd8ae243d0?auto=format&fit=crop&w=1000&q=80",
+          gallery: p.images.map((img) => img.url),
+          summary: p.summary,
+          description: p.description,
+          keyBenefits: p.keyBenefits,
+          specs: (p.specifications as Record<string, string>) || {},
+          bestForRegions: ["Oromia", "Amhara", "Sidama", "Somali Region"],
+        }));
+      }
     }
   } catch {
-    // Memory fallback
+    dbAvailable = false;
   }
 
   return inMemoryInventory;

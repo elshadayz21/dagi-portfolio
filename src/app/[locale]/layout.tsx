@@ -85,11 +85,15 @@ export default async function LocaleLayout({
   return (
     <div className="min-h-screen flex flex-col bg-[#F5F9FF] text-[#0c1b2a] antialiased">
       <script
+        id="schema-local-business"
         type="application/ld+json"
+        suppressHydrationWarning
         dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
       />
       <script
+        id="schema-faq"
         type="application/ld+json"
+        suppressHydrationWarning
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
 
