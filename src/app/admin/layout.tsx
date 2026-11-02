@@ -10,6 +10,7 @@ import {
   Search,
   Languages,
   Image as ImageIcon,
+  History,
   ExternalLink,
   LogOut,
   ShieldCheck,
@@ -39,7 +40,8 @@ export default function AdminLayout({
     { href: "/admin/profile", label: "Representative Profile", icon: UserCheck },
     { href: "/admin/seo", label: "SEO & Meta Settings", icon: Search },
     { href: "/admin/translations", label: "CMS Translations (5 Lang)", icon: Languages },
-    { href: "/admin/media", label: "Media Library (Cloudinary)", icon: ImageIcon },
+    { href: "/admin/media", label: "Media Manager & Assets", icon: ImageIcon },
+    { href: "/admin/activity", label: "Activity & Audit Log", icon: History },
   ];
 
   return (

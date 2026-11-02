@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { saveNewLead, getAllLeads, updateLeadStatus, addLeadNote } from "@/lib/leads-store";
 import { sendLeadNotificationEmails } from "@/lib/email";
+import { logActivity } from "@/lib/activity-store";
 
 export async function GET() {
   try {
@@ -48,6 +49,15 @@ export async function POST(req: NextRequest) {
       message: savedLead.message,
     }).catch((err) => console.error("Email notification background error:", err));
 
+    // Log activity
+    await logActivity(
+      "LEAD_RECEIVED",
+      "LEADS",
+      `New Lead Inquiry: ${savedLead.fullName}`,
+      `Interested in ${savedLead.productTitle || "Tractor Consultation"} from ${savedLead.region}. Phone: ${savedLead.phone}`,
+      "Customer (Web Portal)"
+    );
+
     return NextResponse.json({
       success: true,
       message: "Inquiry successfully recorded. Dagim Melese will contact you shortly.",
@@ -76,10 +86,24 @@ export async function PATCH(req: NextRequest) {
 
     if (status) {
       await updateLeadStatus(leadId, status);
+      await logActivity(
+        "LEAD_STATUS_CHANGED",
+        "LEADS",
+        `Lead Status Updated: ${leadId}`,
+        `Pipeline stage changed to ${status}`,
+        author || "Dagim Melese"
+      );
     }
 
     if (note) {
       await addLeadNote(leadId, author || "Dagim Melese", note);
+      await logActivity(
+        "LEAD_NOTE_ADDED",
+        "LEADS",
+        `Follow-up Note Added: ${leadId}`,
+        `Note content: "${note.substring(0, 100)}${note.length > 100 ? "..." : ""}"`,
+        author || "Dagim Melese"
+      );
     }
 
     return NextResponse.json({ success: true, message: "Lead updated successfully" });

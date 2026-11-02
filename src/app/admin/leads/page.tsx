@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { LeadRecord } from "@/lib/leads-store";
+import { generateExcelWorkbook, generateExcelCSV } from "@/lib/export-excel";
 import {
   Users,
   Search,
@@ -17,6 +18,9 @@ import {
   Plus,
   Loader2,
   FileText,
+  FileSpreadsheet,
+  ChevronDown,
+  CheckCircle2,
 } from "lucide-react";
 
 export default function LeadsCRMPage() {
@@ -28,6 +32,13 @@ export default function LeadsCRMPage() {
   const [selectedLead, setSelectedLead] = useState<LeadRecord | null>(null);
   const [newNote, setNewNote] = useState("");
   const [submittingNote, setSubmittingNote] = useState(false);
+  const [exportMenuOpen, setExportMenuOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3500);
+  };
 
   useEffect(() => {
     fetchLeads();
@@ -111,50 +122,69 @@ export default function LeadsCRMPage() {
     }
   };
 
-  // CSV Export
+  // Download Contacted Clients in Excel (.xls)
+  const downloadContactedExcel = () => {
+    setExportMenuOpen(false);
+    const contacted = leads.filter(
+      (l) =>
+        l.status === "CONTACTED" ||
+        l.status === "INTERESTED" ||
+        l.status === "NEGOTIATING" ||
+        l.status === "WON"
+    );
+
+    if (contacted.length === 0) {
+      alert("No contacted leads found yet.");
+      return;
+    }
+
+    const xml = generateExcelWorkbook(contacted, "Contacted Clients");
+    const blob = new Blob([xml], { type: "application/vnd.ms-excel;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Tekhaf_Contacted_Clients_${new Date().toISOString().split("T")[0]}.xls`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showToast(`Downloaded ${contacted.length} contacted clients in Excel (.xls)!`);
+  };
+
+  // Download All Inquiries in Excel (.xls)
+  const downloadAllExcel = () => {
+    setExportMenuOpen(false);
+    if (leads.length === 0) {
+      alert("No inquiries to download.");
+      return;
+    }
+
+    const xml = generateExcelWorkbook(leads, "All Customer Inquiries");
+    const blob = new Blob([xml], { type: "application/vnd.ms-excel;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Tekhaf_All_Inquiries_${new Date().toISOString().split("T")[0]}.xls`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showToast(`Downloaded all ${leads.length} inquiries in Excel (.xls)!`);
+  };
+
+  // CSV Export with UTF-8 BOM
   const exportToCSV = () => {
+    setExportMenuOpen(false);
     if (leads.length === 0) return;
 
-    const headers = [
-      "ID",
-      "Full Name",
-      "Phone",
-      "Email",
-      "Region",
-      "Tractor Model",
-      "Farm Size (Ha)",
-      "Status",
-      "Created At",
-      "Message",
-    ];
-
-    const rows = leads.map((l) => [
-      `"${l.id}"`,
-      `"${l.fullName}"`,
-      `"${l.phone}"`,
-      `"${l.email || ""}"`,
-      `"${l.region}"`,
-      `"${l.productTitle || ""}"`,
-      `"${l.farmSizeHectares || ""}"`,
-      `"${l.status}"`,
-      `"${new Date(l.createdAt).toLocaleDateString()}"`,
-      `"${(l.message || "").replace(/"/g, '""')}"`,
-    ]);
-
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
-
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute(
-      "download",
-      `Tekhaf_Tractor_Leads_${new Date().toISOString().split("T")[0]}.csv`
-    );
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const csvContent = generateExcelCSV(leads);
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Tekhaf_Tractor_Leads_${new Date().toISOString().split("T")[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showToast(`Exported ${leads.length} leads to CSV.`);
   };
 
   // Filtered Leads
@@ -196,14 +226,73 @@ export default function LeadsCRMPage() {
           </p>
         </div>
 
-        <button
-          onClick={exportToCSV}
-          className="bg-tekhaf-700 hover:bg-tekhaf-800 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm transition-all"
-        >
-          <Download className="w-4 h-4" />
-          <span>Export CSV Report</span>
-        </button>
+        {/* Excel & CSV Download Actions */}
+        <div className="relative">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={downloadContactedExcel}
+              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm transition-all"
+              title="Download contacted, interested, negotiating and won clients to Excel"
+            >
+              <FileSpreadsheet className="w-4 h-4" />
+              <span>Download Contacted (Excel)</span>
+            </button>
+
+            <button
+              onClick={() => setExportMenuOpen(!exportMenuOpen)}
+              className="bg-tekhaf-700 hover:bg-tekhaf-800 text-white font-bold p-2.5 rounded-xl text-xs flex items-center justify-center shadow-sm transition-all"
+              title="More export options"
+            >
+              <ChevronDown className="w-4 h-4" />
+            </button>
+          </div>
+
+          {exportMenuOpen && (
+            <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 z-50 animate-in fade-in">
+              <button
+                onClick={downloadContactedExcel}
+                className="w-full text-left px-4 py-2 text-xs hover:bg-slate-50 flex items-center gap-2.5 text-slate-700"
+              >
+                <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+                <div>
+                  <span className="font-bold block">Contacted Information (.xls)</span>
+                  <span className="text-[10px] text-slate-400">All contacted / active client leads</span>
+                </div>
+              </button>
+
+              <button
+                onClick={downloadAllExcel}
+                className="w-full text-left px-4 py-2 text-xs hover:bg-slate-50 flex items-center gap-2.5 text-slate-700 border-t border-slate-100"
+              >
+                <FileSpreadsheet className="w-4 h-4 text-tekhaf-600" />
+                <div>
+                  <span className="font-bold block">All Inquiries (.xls)</span>
+                  <span className="text-[10px] text-slate-400">Complete inquiry registry</span>
+                </div>
+              </button>
+
+              <button
+                onClick={exportToCSV}
+                className="w-full text-left px-4 py-2 text-xs hover:bg-slate-50 flex items-center gap-2.5 text-slate-700 border-t border-slate-100"
+              >
+                <Download className="w-4 h-4 text-slate-500" />
+                <div>
+                  <span className="font-bold block">Standard CSV (.csv)</span>
+                  <span className="text-[10px] text-slate-400">UTF-8 encoded format</span>
+                </div>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white text-xs font-semibold px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-2.5 animate-in slide-in-from-bottom-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
 
       {/* Filter and Search Bar */}
       <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm grid grid-cols-1 sm:grid-cols-3 gap-3">

@@ -138,6 +138,9 @@ export default async function LocaleLayout({
         phone={cms.phone}
         email={cms.email}
         customLogoUrl={cms.customLogoUrl}
+        locations={cms.locations}
+        phones={cms.phones}
+        emails={cms.emails}
       />
     </div>
   );

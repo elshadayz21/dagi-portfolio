@@ -17,6 +17,8 @@ interface AboutPageProps {
   params: Promise<{ locale: string }>;
 }
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({
   params,
 }: AboutPageProps): Promise<Metadata> {
@@ -110,10 +112,21 @@ export default async function AboutPage({ params }: AboutPageProps) {
               </a>
             </div>
 
-            <div className="text-xs text-slate-500 flex items-center justify-center lg:justify-start gap-2 pt-2">
-              <MapPin className="w-3.5 h-3.5 text-tekhaf-700 shrink-0" />
-              <span>{cms.officeAddress}</span>
-            </div>
+            {cms.locations && cms.locations.length > 0 ? (
+              <div className="space-y-1.5 pt-2">
+                {cms.locations.map((loc) => (
+                  <div key={loc.id} className="text-xs text-slate-600 flex items-center justify-center lg:justify-start gap-2">
+                    <MapPin className="w-3.5 h-3.5 text-tekhaf-700 shrink-0" />
+                    <span><strong className="text-slate-800">{loc.title}:</strong> {loc.address}, {loc.city}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-xs text-slate-500 flex items-center justify-center lg:justify-start gap-2 pt-2">
+                <MapPin className="w-3.5 h-3.5 text-tekhaf-700 shrink-0" />
+                <span>{cms.officeAddress}</span>
+              </div>
+            )}
           </div>
         </div>
       </div>

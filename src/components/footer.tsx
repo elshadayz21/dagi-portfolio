@@ -2,8 +2,9 @@ import Link from "next/link";
 import { Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { TractorProduct } from "@/lib/data/inventory";
+import { OfficeLocation, ContactPhone, ContactEmail } from "@/lib/cms-store";
 import { Logo } from "@/components/logo";
-import { Phone, Mail, MapPin } from "lucide-react";
+import { Phone, Mail, MapPin, Building2 } from "lucide-react";
 
 interface FooterProps {
   currentLocale: Locale;
@@ -16,6 +17,9 @@ interface FooterProps {
   phone?: string;
   email?: string;
   customLogoUrl?: string | null;
+  locations?: OfficeLocation[];
+  phones?: ContactPhone[];
+  emails?: ContactEmail[];
 }
 
 export function Footer({
@@ -29,6 +33,9 @@ export function Footer({
   phone = "+251911234567",
   email = "dagim@tekhaf.com",
   customLogoUrl = null,
+  locations = [],
+  phones = [],
+  emails = [],
 }: FooterProps) {
   const dict = getDictionary(currentLocale);
 
@@ -36,7 +43,7 @@ export function Footer({
     <footer className="bg-slate-900 text-slate-300 pt-16 pb-12 border-t border-slate-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 mb-12">
-          {/* Col 1: Identity (Dagim Melese & Tekhaf) */}
+          {/* Col 1: Identity & Multi-Locations (Dagim Melese & Tekhaf) */}
           <div className="lg:col-span-5 space-y-4">
             <Logo
               representativeName={representativeName}
@@ -48,17 +55,47 @@ export function Footer({
             <p className="text-xs text-slate-400 max-w-sm leading-relaxed pt-2">
               Agricultural machinery sales consultant facilitating heavy-duty tractor acquisition, genuine spare parts, and on-farm technician support throughout Ethiopia.
             </p>
-            <div className="text-xs text-slate-400 space-y-1.5 pt-2">
-              <div className="flex items-center gap-2">
-                <MapPin className="w-3.5 h-3.5 text-tekhaf-400 shrink-0" />
-                <span>{officeAddress}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Phone className="w-3.5 h-3.5 text-tekhaf-400 shrink-0" />
-                <a href={`tel:${phone}`} className="hover:text-white transition-colors">
-                  {phoneDisplay}
-                </a>
-              </div>
+
+            <div className="text-xs text-slate-400 space-y-2.5 pt-2">
+              {/* Dynamic Multiple Locations */}
+              {locations.length > 0 ? (
+                locations.map((loc) => (
+                  <div key={loc.id} className="flex items-start gap-2">
+                    <MapPin className="w-3.5 h-3.5 text-tekhaf-400 shrink-0 mt-0.5" />
+                    <div>
+                      <strong className="text-slate-300 block">{loc.title}:</strong>
+                      <span>{loc.address}, {loc.city}</span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-3.5 h-3.5 text-tekhaf-400 shrink-0" />
+                  <span>{officeAddress}</span>
+                </div>
+              )}
+
+              {/* Dynamic Multiple Phone Numbers */}
+              {phones.length > 0 ? (
+                phones.map((p) => (
+                  <div key={p.id} className="flex items-center gap-2">
+                    <Phone className="w-3.5 h-3.5 text-tekhaf-400 shrink-0" />
+                    <span className="text-slate-400">{p.label}:</span>
+                    <a href={`tel:${p.phone}`} className="hover:text-white text-slate-300 font-semibold transition-colors">
+                      {p.display}
+                    </a>
+                  </div>
+                ))
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Phone className="w-3.5 h-3.5 text-tekhaf-400 shrink-0" />
+                  <a href={`tel:${phone}`} className="hover:text-white transition-colors">
+                    {phoneDisplay}
+                  </a>
+                </div>
+              )}
+
+              {/* Email */}
               <div className="flex items-center gap-2">
                 <Mail className="w-3.5 h-3.5 text-tekhaf-400 shrink-0" />
                 <a href={`mailto:${email}`} className="hover:text-white transition-colors">

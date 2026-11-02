@@ -1,110 +1,772 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import Image from "next/image";
-import { tractorInventory } from "@/lib/data/inventory";
-import { Upload, Image as ImageIcon, Trash2, Copy, Check, Cloud } from "lucide-react";
+import {
+  Upload,
+  Image as ImageIcon,
+  Trash2,
+  Copy,
+  Check,
+  Cloud,
+  Edit2,
+  X,
+  Search,
+  Filter,
+  CheckCircle2,
+  Sparkles,
+  RefreshCw,
+  FolderOpen,
+} from "lucide-react";
+import { MediaAsset } from "@/lib/media-store";
 
 export default function AdminMediaPage() {
+  const [mediaItems, setMediaItems] = useState<MediaAsset[]>([]);
+  const [loading, setLoading] = useState(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  const mediaItems = tractorInventory.flatMap((t, i) => [
-    {
-      id: `media-${i}-1`,
-      title: `${t.title} - Main View`,
-      url: t.image,
-      format: "JPEG",
-      size: "820 KB",
-    },
-    ...t.gallery.map((g, gi) => ({
-      id: `media-${i}-gal-${gi}`,
-      title: `${t.title} - Detail Angle ${gi + 1}`,
-      url: g,
-      format: "JPEG",
-      size: "640 KB",
-    })),
-  ]);
+  // Upload Modal State
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [uploadTitle, setUploadTitle] = useState("");
+  const [uploadCategory, setUploadCategory] = useState<MediaAsset["category"]>("Tractors");
+  const [uploadUrl, setUploadUrl] = useState("");
+  const [uploadPreview, setUploadPreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Edit / Replace Modal State
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<MediaAsset | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editCategory, setEditCategory] = useState<MediaAsset["category"]>("Tractors");
+  const [editUrl, setEditUrl] = useState("");
+  const [editPreview, setEditPreview] = useState<string | null>(null);
+  const [savingEdit, setSavingEdit] = useState(false);
+  const editFileInputRef = useRef<HTMLInputElement>(null);
+
+  // Delete confirmation
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchMedia();
+  }, []);
+
+  const fetchMedia = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/media");
+      const data = await res.json();
+      if (data.success && data.items) {
+        setMediaItems(data.items);
+      }
+    } catch (err) {
+      console.error("Failed to fetch media", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3500);
+  };
 
   const copyUrl = (url: string, id: string) => {
     navigator.clipboard.writeText(url);
     setCopiedId(id);
+    showToast("Media URL copied to clipboard!");
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  // Quick set as Site Logo & Favicon
+  const setAsSiteLogo = async (url: string) => {
+    try {
+      const res = await fetch("/api/cms", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ customLogoUrl: url }),
+      });
+      if (res.ok) {
+        showToast("Asset set as active site logo & favicon!");
+      }
+    } catch {
+      alert("Failed to update logo");
+    }
+  };
+
+  // Handle local file selection for Upload
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!uploadTitle) {
+      const cleanName = file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
+      setUploadTitle(cleanName);
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const result = event.target?.result as string;
+      setUploadPreview(result);
+      setUploadUrl(result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Submit New Upload
+  const handleUploadSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!uploadUrl || !uploadTitle) {
+      alert("Please provide an image and a title.");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const isDataUrl = uploadUrl.startsWith("data:");
+      const approxSize = isDataUrl
+        ? `${Math.round((uploadUrl.length * 3) / 4 / 1024)} KB`
+        : "680 KB";
+
+      const res = await fetch("/api/media", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: uploadTitle.trim(),
+          url: uploadUrl,
+          category: uploadCategory,
+          format: "JPEG",
+          size: approxSize,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setMediaItems([data.asset, ...mediaItems]);
+        setUploadModalOpen(false);
+        setUploadTitle("");
+        setUploadUrl("");
+        setUploadPreview(null);
+        showToast("New media asset successfully uploaded!");
+      } else {
+        alert(data.error || "Failed to upload asset");
+      }
+    } catch {
+      alert("Error uploading media asset");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // Open Edit Modal
+  const openEditModal = (item: MediaAsset) => {
+    setEditingItem(item);
+    setEditTitle(item.title);
+    setEditCategory(item.category);
+    setEditUrl(item.url);
+    setEditPreview(item.url);
+    setEditModalOpen(true);
+  };
+
+  // Handle local file selection for Edit / Replace
+  const handleEditFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const result = event.target?.result as string;
+      setEditPreview(result);
+      setEditUrl(result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Submit Edit / Replace
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingItem) return;
+
+    setSavingEdit(true);
+    try {
+      const isDataUrl = editUrl.startsWith("data:");
+      const approxSize = isDataUrl
+        ? `${Math.round((editUrl.length * 3) / 4 / 1024)} KB`
+        : editingItem.size;
+
+      const res = await fetch("/api/media", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: editingItem.id,
+          title: editTitle.trim(),
+          url: editUrl,
+          category: editCategory,
+          size: approxSize,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setMediaItems(
+          mediaItems.map((m) => (m.id === editingItem.id ? data.asset : m))
+        );
+        setEditModalOpen(false);
+        setEditingItem(null);
+        showToast("Media asset updated successfully!");
+      } else {
+        alert(data.error || "Failed to update asset");
+      }
+    } catch {
+      alert("Error updating media asset");
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
+  // Delete Media
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to permanently delete this media asset?")) return;
+
+    setDeletingId(id);
+    try {
+      const res = await fetch(`/api/media?id=${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        setMediaItems(mediaItems.filter((m) => m.id !== id));
+        showToast("Media asset permanently deleted.");
+      } else {
+        alert("Failed to delete media asset");
+      }
+    } catch {
+      alert("Error deleting media asset");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  // Filtered Media Items
+  const filteredMedia = useMemo(() => {
+    return mediaItems.filter((item) => {
+      const matchesSearch =
+        !searchQuery ||
+        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.category.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory =
+        selectedCategory === "ALL" || item.category === selectedCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }, [mediaItems, searchQuery, selectedCategory]);
+
   return (
     <div className="space-y-6">
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white text-xs font-semibold px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-2.5 animate-in slide-in-from-bottom-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-            Media Manager (Cloudinary CDN)
+            Media Manager & Assets
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Store, optimize, and organize tractor gallery images, brochures, and machinery spec sheets.
+            Store, upload, edit, replace, and organize tractor gallery photos, brochures, and brand graphics.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <button className="bg-tekhaf-700 hover:bg-tekhaf-800 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-sm transition-all">
-            <Upload className="w-4 h-4" />
-            <span>Upload New Media Asset</span>
-          </button>
-        </div>
+        <button
+          onClick={() => {
+            setUploadTitle("");
+            setUploadUrl("");
+            setUploadPreview(null);
+            setUploadModalOpen(true);
+          }}
+          className="bg-tekhaf-700 hover:bg-tekhaf-800 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm transition-all"
+        >
+          <Upload className="w-4 h-4" />
+          <span>Upload New Media Asset</span>
+        </button>
       </div>
 
-      {/* Cloudinary Status Indicator */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+      {/* Cloudinary & CDN Delivery Status */}
+      <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
             <Cloud className="w-5 h-5" />
           </div>
           <div>
             <span className="text-xs font-bold text-slate-800 block">
-              Cloudinary CDN: tekhaf-trading
+              High-Speed Agricultural CDN & Storage Active
             </span>
             <span className="text-[11px] text-slate-400">
-              Auto-compression (f_auto, q_auto) enabled for high-speed delivery in Ethiopia
+              Automatic optimization and compression for high-speed delivery to Ethiopian regional users
             </span>
           </div>
         </div>
-        <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">
-          Connected
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] font-bold text-slate-600 bg-slate-100 px-3 py-1 rounded-full">
+            {mediaItems.length} Total Assets
+          </span>
+          <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">
+            Online
+          </span>
+        </div>
       </div>
 
-      {/* Media Gallery Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {mediaItems.map((item) => (
-          <div
-            key={item.id}
-            className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm group flex flex-col justify-between"
-          >
-            <div className="relative h-40 bg-slate-100">
-              <Image src={item.url} alt={item.title} fill className="object-cover" />
-              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button
-                  onClick={() => copyUrl(item.url, item.id)}
-                  className="p-1.5 rounded-lg bg-white/90 text-slate-700 hover:bg-white shadow text-xs font-bold flex items-center gap-1"
-                  title="Copy URL"
+      {/* Search and Category Filters */}
+      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-3 items-center justify-between">
+        <div className="relative w-full md:w-80">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+          <input
+            type="text"
+            placeholder="Search media by title or keyword..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full text-xs pl-9 pr-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600 bg-slate-50/50"
+          />
+        </div>
+
+        <div className="flex items-center gap-1.5 flex-wrap w-full md:w-auto">
+          {["ALL", "Tractors", "Implements", "Showroom", "Branding", "Brochures"].map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition-colors ${
+                selectedCategory === cat
+                  ? "bg-tekhaf-700 text-white"
+                  : "bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200"
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Media Grid */}
+      {loading ? (
+        <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
+          <RefreshCw className="w-4 h-4 animate-spin text-tekhaf-600" />
+          <span>Loading media library...</span>
+        </div>
+      ) : filteredMedia.length === 0 ? (
+        <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center space-y-3">
+          <FolderOpen className="w-10 h-10 text-slate-300 mx-auto" />
+          <h3 className="text-sm font-bold text-slate-700">No media assets found</h3>
+          <p className="text-xs text-slate-400 max-w-sm mx-auto">
+            Try adjusting your search query or upload a new image to start building your media gallery.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+          {filteredMedia.map((item) => (
+            <div
+              key={item.id}
+              className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow group flex flex-col justify-between"
+            >
+              {/* Media Preview Box */}
+              <div className="relative h-44 bg-slate-100 overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={item.url}
+                  alt={item.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src =
+                      "https://images.unsplash.com/photo-1592878904946-b3cd8ae243d0?w=600&q=80";
+                  }}
+                />
+
+                {/* Category Badge */}
+                <span className="absolute top-2.5 left-2.5 bg-slate-900/80 backdrop-blur-sm text-white text-[10px] font-semibold px-2 py-0.5 rounded-md">
+                  {item.category}
+                </span>
+
+                {/* Quick Action Overlay */}
+                <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
+                    onClick={() => copyUrl(item.url, item.id)}
+                    className="p-1.5 rounded-lg bg-white/95 text-slate-700 hover:text-tekhaf-700 shadow-md transition-colors"
+                    title="Copy URL"
+                  >
+                    {copiedId === item.id ? (
+                      <Check className="w-3.5 h-3.5 text-emerald-600" />
+                    ) : (
+                      <Copy className="w-3.5 h-3.5" />
+                    )}
+                  </button>
+
+                  <button
+                    onClick={() => openEditModal(item)}
+                    className="p-1.5 rounded-lg bg-white/95 text-slate-700 hover:text-tekhaf-700 shadow-md transition-colors"
+                    title="Edit or Replace Image"
+                  >
+                    <Edit2 className="w-3.5 h-3.5" />
+                  </button>
+
+                  <button
+                    onClick={() => handleDelete(item.id)}
+                    disabled={deletingId === item.id}
+                    className="p-1.5 rounded-lg bg-white/95 text-rose-600 hover:bg-rose-50 shadow-md transition-colors disabled:opacity-50"
+                    title="Delete Asset"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Card Meta & Actions */}
+              <div className="p-3.5 space-y-2.5">
+                <div>
+                  <h3 className="font-bold text-xs text-slate-800 line-clamp-1" title={item.title}>
+                    {item.title}
+                  </h3>
+                  <div className="flex items-center justify-between text-[10px] text-slate-400 mt-1">
+                    <span>{item.format} • {item.size}</span>
+                    <span>{new Date(item.createdAt).toLocaleDateString()}</span>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
+                  <button
+                    onClick={() => openEditModal(item)}
+                    className="flex-1 py-1.5 px-2 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-lg text-[11px] font-semibold border border-slate-200 transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <Edit2 className="w-3 h-3 text-slate-500" />
+                    <span>Edit / Replace</span>
+                  </button>
+
+                  <button
+                    onClick={() => setAsSiteLogo(item.url)}
+                    className="py-1.5 px-2.5 bg-tekhaf-50 hover:bg-tekhaf-100 text-tekhaf-700 rounded-lg text-[11px] font-semibold border border-tekhaf-200 transition-colors flex items-center gap-1"
+                    title="Use this image as active site logo & favicon"
+                  >
+                    <Sparkles className="w-3 h-3" />
+                    <span>Set as Logo</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ------------------- UPLOAD MODAL ------------------- */}
+      {uploadModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-150">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 sm:p-7 relative border border-slate-200">
+            <button
+              onClick={() => setUploadModalOpen(false)}
+              className="absolute top-4 right-4 p-1.5 text-slate-400 hover:text-slate-700 rounded-full hover:bg-slate-100"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-3 mb-5 border-b border-slate-100 pb-3">
+              <div className="w-10 h-10 rounded-xl bg-tekhaf-50 text-tekhaf-700 flex items-center justify-center shrink-0">
+                <Upload className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-slate-900">Upload New Media Asset</h3>
+                <p className="text-xs text-slate-500">Choose a local file or enter an image URL</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleUploadSubmit} className="space-y-4">
+              {/* File Dropzone / Selector */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Select Image File
+                </label>
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  className="border-2 border-dashed border-slate-200 hover:border-tekhaf-500 rounded-2xl p-5 text-center cursor-pointer bg-slate-50/50 hover:bg-tekhaf-50/20 transition-all"
                 >
-                  {copiedId === item.id ? (
-                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileSelect}
+                    className="hidden"
+                  />
+                  {uploadPreview ? (
+                    <div className="space-y-2">
+                      <div className="relative h-32 w-full max-w-xs mx-auto rounded-xl overflow-hidden border border-slate-200 bg-white">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={uploadPreview}
+                          alt="Preview"
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                      <p className="text-[11px] text-tekhaf-700 font-semibold">
+                        Click to choose a different file
+                      </p>
+                    </div>
                   ) : (
-                    <Copy className="w-3.5 h-3.5" />
+                    <div className="space-y-1">
+                      <ImageIcon className="w-8 h-8 text-slate-400 mx-auto" />
+                      <p className="text-xs font-semibold text-slate-700">
+                        Click to browse file from device
+                      </p>
+                      <p className="text-[10px] text-slate-400">
+                        PNG, JPG, WebP supported (Auto-compressed)
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Or Direct URL */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Or Paste Image URL (Cloudinary / Web)
+                </label>
+                <input
+                  type="text"
+                  placeholder="https://images.unsplash.com/... or https://res.cloudinary.com/..."
+                  value={uploadUrl}
+                  onChange={(e) => {
+                    setUploadUrl(e.target.value);
+                    setUploadPreview(e.target.value);
+                  }}
+                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600 bg-white"
+                />
+              </div>
+
+              {/* Asset Title */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Asset Title / Caption *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Massey Ferguson 385 4WD Heavy Engine Bay"
+                  value={uploadTitle}
+                  onChange={(e) => setUploadTitle(e.target.value)}
+                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600 font-medium"
+                />
+              </div>
+
+              {/* Category */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Category
+                </label>
+                <select
+                  value={uploadCategory}
+                  onChange={(e) => setUploadCategory(e.target.value as any)}
+                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600 bg-white font-medium"
+                >
+                  <option value="Tractors">Tractors & Machinery</option>
+                  <option value="Implements">Agricultural Implements</option>
+                  <option value="Showroom">Showroom & Warehouses</option>
+                  <option value="Branding">Branding & Logos</option>
+                  <option value="Brochures">Brochures & Specs</option>
+                </select>
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setUploadModalOpen(false)}
+                  className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={uploading}
+                  className="px-5 py-2.5 rounded-xl bg-tekhaf-700 hover:bg-tekhaf-800 text-white text-xs font-bold shadow-sm flex items-center gap-1.5 disabled:opacity-75"
+                >
+                  {uploading ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <span>Uploading...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>Upload to Library</span>
+                    </>
                   )}
                 </button>
               </div>
-            </div>
+            </form>
+          </div>
+        </div>
+      )}
 
-            <div className="p-3 text-xs">
-              <h3 className="font-bold text-slate-800 line-clamp-1">{item.title}</h3>
-              <div className="flex items-center justify-between text-[10px] text-slate-400 mt-1">
-                <span>{item.format}</span>
-                <span>{item.size}</span>
+      {/* ------------------- EDIT / REPLACE MODAL ------------------- */}
+      {editModalOpen && editingItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-150">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 sm:p-7 relative border border-slate-200">
+            <button
+              onClick={() => setEditModalOpen(false)}
+              className="absolute top-4 right-4 p-1.5 text-slate-400 hover:text-slate-700 rounded-full hover:bg-slate-100"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-3 mb-5 border-b border-slate-100 pb-3">
+              <div className="w-10 h-10 rounded-xl bg-tekhaf-50 text-tekhaf-700 flex items-center justify-center shrink-0">
+                <Edit2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-slate-900">Edit or Replace Media Image</h3>
+                <p className="text-xs text-slate-500">Update image title, category, or upload another image</p>
               </div>
             </div>
+
+            <form onSubmit={handleEditSubmit} className="space-y-4">
+              {/* Image Preview & Replace Trigger */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Current Image Preview
+                </label>
+                <div className="relative h-40 w-full rounded-2xl overflow-hidden border border-slate-200 bg-slate-100 flex items-center justify-center group">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={editPreview || editingItem.url}
+                    alt={editTitle}
+                    className="w-full h-full object-contain"
+                  />
+                  <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => editFileInputRef.current?.click()}
+                      className="bg-white text-slate-900 text-xs font-bold px-3 py-1.5 rounded-lg shadow-md hover:bg-slate-50 flex items-center gap-1.5"
+                    >
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>Upload Another Image</span>
+                    </button>
+                  </div>
+                </div>
+
+                <input
+                  ref={editFileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleEditFileSelect}
+                  className="hidden"
+                />
+
+                <div className="pt-2 flex justify-between items-center text-[11px]">
+                  <span className="text-slate-400">Want to replace the image file?</span>
+                  <button
+                    type="button"
+                    onClick={() => editFileInputRef.current?.click()}
+                    className="text-tekhaf-700 font-bold hover:underline flex items-center gap-1"
+                  >
+                    <Upload className="w-3 h-3" />
+                    <span>Choose File from Device</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Or New Image URL */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Or Replace with Image URL
+                </label>
+                <input
+                  type="text"
+                  value={editUrl}
+                  onChange={(e) => {
+                    setEditUrl(e.target.value);
+                    setEditPreview(e.target.value);
+                  }}
+                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600 bg-white"
+                />
+              </div>
+
+              {/* Title */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Asset Title *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600 font-medium"
+                />
+              </div>
+
+              {/* Category */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Category
+                </label>
+                <select
+                  value={editCategory}
+                  onChange={(e) => setEditCategory(e.target.value as any)}
+                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600 bg-white font-medium"
+                >
+                  <option value="Tractors">Tractors & Machinery</option>
+                  <option value="Implements">Agricultural Implements</option>
+                  <option value="Showroom">Showroom & Warehouses</option>
+                  <option value="Branding">Branding & Logos</option>
+                  <option value="Brochures">Brochures & Specs</option>
+                </select>
+              </div>
+
+              <div className="pt-2 flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditModalOpen(false);
+                    handleDelete(editingItem.id);
+                  }}
+                  className="text-rose-600 hover:text-rose-700 text-xs font-semibold flex items-center gap-1.5"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Delete Asset</span>
+                </button>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditModalOpen(false)}
+                    className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={savingEdit}
+                    className="px-5 py-2.5 rounded-xl bg-tekhaf-700 hover:bg-tekhaf-800 text-white text-xs font-bold shadow-sm flex items-center gap-1.5 disabled:opacity-75"
+                  >
+                    {savingEdit ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        <span>Saving...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Check className="w-3.5 h-3.5" />
+                        <span>Save Changes</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </form>
           </div>
-        ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
