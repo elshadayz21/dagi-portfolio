@@ -164,7 +164,7 @@ export default async function AdminDashboardPage() {
         </div>
 
         <div className="divide-y divide-slate-100">
-          {leads.slice(0, 5).map((lead) => (
+          {(leads || []).slice(0, 5).map((lead) => (
             <div
               key={lead.id}
               className="p-6 hover:bg-slate-50/70 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4"

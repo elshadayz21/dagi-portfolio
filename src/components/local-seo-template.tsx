@@ -108,7 +108,7 @@ export function LocalSEOTemplate({
               Machinery Recommended for {area.regionName}
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {recommendedTractors.slice(0, 4).map((tractor) => (
+              {(recommendedTractors || []).slice(0, 4).map((tractor) => (
                 <div
                   key={tractor.id}
                   className="bg-white rounded-xl border border-slate-200 overflow-hidden p-4 space-y-2 flex flex-col justify-between"

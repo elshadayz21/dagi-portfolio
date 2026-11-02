@@ -25,7 +25,7 @@ export default async function HomePage({ params }: HomePageProps) {
   const dict = getDictionary(currentLocale);
 
   const cms = await getCMSData();
-  const allTractors = await getLiveTractors();
+  const allTractors = (await getLiveTractors()) || [];
   const featuredTractors = allTractors.slice(0, 4);
 
   return (

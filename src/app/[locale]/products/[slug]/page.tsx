@@ -58,7 +58,7 @@ export default async function ProductDetailsPage({
   const dict = getDictionary(currentLocale);
 
   const cms = await getCMSData();
-  const tractors = await getLiveTractors();
+  const tractors = (await getLiveTractors()) || [];
   const product = tractors.find((p) => p.slug === slug);
 
   if (!product) {

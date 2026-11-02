@@ -7,7 +7,7 @@ import { Phone, Mail, MapPin } from "lucide-react";
 
 interface FooterProps {
   currentLocale: Locale;
-  tractors: TractorProduct[];
+  tractors?: TractorProduct[];
   representativeName?: string;
   jobTitle?: string;
   companyName?: string;
@@ -20,7 +20,7 @@ interface FooterProps {
 
 export function Footer({
   currentLocale,
-  tractors,
+  tractors = [],
   representativeName = "Dagim Melese",
   jobTitle = "Agricultural Machinery Specialist",
   companyName = "Tekhaf Trading",
@@ -74,7 +74,7 @@ export function Footer({
               Tractor Inventory
             </h3>
             <ul className="space-y-2 text-xs">
-              {tractors.slice(0, 6).map((tractor) => (
+              {(tractors || []).slice(0, 6).map((tractor) => (
                 <li key={tractor.id}>
                   <Link
                     href={`/${currentLocale}/products/${tractor.slug}`}
