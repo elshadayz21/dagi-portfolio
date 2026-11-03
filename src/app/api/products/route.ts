@@ -43,6 +43,7 @@ export async function POST(req: NextRequest) {
       slug,
       title: body.title,
       brand: body.brand,
+      category: body.category || undefined,
       modelNumber: body.modelNumber || body.title,
       horsepower: Number(body.horsepower),
       engineType: body.engineType || "Perkins / Tier II Diesel Engine",

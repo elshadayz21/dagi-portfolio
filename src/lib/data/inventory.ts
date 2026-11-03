@@ -3,6 +3,7 @@ export interface TractorProduct {
   slug: string;
   title: string;
   brand: string;
+  category?: string;
   modelNumber: string;
   horsepower: number;
   engineType: string;
@@ -30,6 +31,7 @@ export const tractorInventory: TractorProduct[] = [
     slug: "massey-ferguson-385-4wd",
     title: "Massey Ferguson MF 385 (4WD, 85 HP)",
     brand: "Massey Ferguson",
+    category: "Heavy-Duty 4WD Tractors",
     modelNumber: "MF 385 4WD",
     horsepower: 85,
     engineType: "Perkins 4.41 Direct-Injection 4-Cylinder Diesel",
@@ -77,6 +79,7 @@ export const tractorInventory: TractorProduct[] = [
     slug: "massey-ferguson-375-75hp",
     title: "Massey Ferguson MF 375 (2WD/4WD, 75 HP)",
     brand: "Massey Ferguson",
+    category: "Utility & Medium Tractors",
     modelNumber: "MF 375",
     horsepower: 75,
     engineType: "Perkins 4.248 Low-Emission 4-Cylinder Diesel",
@@ -118,6 +121,7 @@ export const tractorInventory: TractorProduct[] = [
     slug: "lovol-tb754-75hp-4wd",
     title: "Lovol TB754 Heavy-Duty Tractor (4WD, 75 HP)",
     brand: "Lovol",
+    category: "Utility & Medium Tractors",
     modelNumber: "TB754",
     horsepower: 75,
     engineType: "Xinchai 4-Cylinder Water-Cooled Diesel Engine",
@@ -159,6 +163,7 @@ export const tractorInventory: TractorProduct[] = [
     slug: "new-holland-tt75-4wd",
     title: "New Holland TT75 (4WD, 75 HP Turbo)",
     brand: "New Holland",
+    category: "Utility & Medium Tractors",
     modelNumber: "TT75 4WD",
     horsepower: 75,
     engineType: "Iveco 8000 Series 3-Cylinder Turbocharged Diesel",
@@ -199,6 +204,7 @@ export const tractorInventory: TractorProduct[] = [
     slug: "lovol-td904-90hp-cabin",
     title: "Lovol TD904 Heavy Tractor with A/C Cabin (4WD, 90 HP)",
     brand: "Lovol",
+    category: "Deluxe Cabin & Row-Crop Tractors",
     modelNumber: "TD904 A/C",
     horsepower: 90,
     engineType: "Yuchai 4-Cylinder High-Pressure Turbocharged Diesel",
@@ -238,6 +244,7 @@ export const tractorInventory: TractorProduct[] = [
     slug: "john-deere-5075e-4wd",
     title: "John Deere 5075E Utility Tractor (4WD, 75 HP)",
     brand: "John Deere",
+    category: "Utility & Medium Tractors",
     modelNumber: "5075E",
     horsepower: 75,
     engineType: "John Deere PowerTech 3-Cylinder Turbocharged Diesel",

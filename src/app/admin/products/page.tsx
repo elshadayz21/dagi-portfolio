@@ -16,12 +16,15 @@ import {
   ImageIcon,
   Search,
   Check,
+  FolderTree,
 } from "lucide-react";
 import { Pagination } from "@/components/pagination";
+import { CategoryItem } from "@/lib/category-store";
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<TractorProduct[]>([]);
   const [mediaList, setMediaList] = useState<MediaAsset[]>([]);
+  const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -30,12 +33,14 @@ export default function AdminProductsPage() {
   const [notice, setNotice] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [brandFilter, setBrandFilter] = useState("ALL");
+  const [categoryFilter, setCategoryFilter] = useState("ALL");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(8);
 
   const [form, setForm] = useState({
     title: "",
     brand: "Massey Ferguson",
+    category: "Heavy-Duty 4WD Tractors",
     modelNumber: "",
     horsepower: 75,
     engineType: "Perkins Diesel 4-Cylinder",
@@ -47,6 +52,18 @@ export default function AdminProductsPage() {
     summary: "",
     isFeatured: true,
   });
+
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch("/api/categories?type=PRODUCT");
+      const data = await res.json();
+      if (data.success && data.categories) {
+        setCategories(data.categories);
+      }
+    } catch (err) {
+      console.error("Failed to fetch categories:", err);
+    }
+  };
 
   const fetchProducts = async () => {
     try {
@@ -78,6 +95,7 @@ export default function AdminProductsPage() {
   useEffect(() => {
     fetchProducts();
     fetchMedia();
+    fetchCategories();
   }, []);
 
   const showToast = (msg: string) => {
@@ -90,6 +108,7 @@ export default function AdminProductsPage() {
     setForm({
       title: "",
       brand: "Massey Ferguson",
+      category: categories[0]?.name || "Heavy-Duty 4WD Tractors",
       modelNumber: "",
       horsepower: 85,
       engineType: "Perkins 4.41 Direct Injection Diesel",
@@ -109,6 +128,7 @@ export default function AdminProductsPage() {
     setForm({
       title: p.title,
       brand: p.brand,
+      category: p.category || categories[0]?.name || "Heavy-Duty 4WD Tractors",
       modelNumber: p.modelNumber,
       horsepower: p.horsepower,
       engineType: p.engineType,
@@ -135,6 +155,7 @@ export default function AdminProductsPage() {
         slug,
         title: form.title,
         brand: form.brand,
+        category: form.category || undefined,
         modelNumber: form.modelNumber,
         horsepower: Number(form.horsepower),
         engineType: form.engineType,
@@ -224,11 +245,15 @@ export default function AdminProductsPage() {
       const matchesSearch =
         p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         p.modelNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.brand.toLowerCase().includes(searchQuery.toLowerCase());
+        p.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (p.category && p.category.toLowerCase().includes(searchQuery.toLowerCase()));
       const matchesBrand = brandFilter === "ALL" || p.brand === brandFilter;
-      return matchesSearch && matchesBrand;
+      const matchesCategory =
+        categoryFilter === "ALL" ||
+        (p.category && p.category.toLowerCase() === categoryFilter.toLowerCase());
+      return matchesSearch && matchesBrand && matchesCategory;
     });
-  }, [products, searchQuery, brandFilter]);
+  }, [products, searchQuery, brandFilter, categoryFilter]);
 
   const totalPages = Math.ceil(filteredProducts.length / pageSize) || 1;
 
@@ -323,6 +348,33 @@ export default function AdminProductsPage() {
               {b}
             </button>
           ))}
+
+          {/* Category Filter Dropdown */}
+          <select
+            value={categoryFilter}
+            onChange={(e) => {
+              setCategoryFilter(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-tekhaf-600 whitespace-nowrap"
+          >
+            <option value="ALL">All Categories</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.name}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+
+          {/* Manage Categories Shortcut */}
+          <Link
+            href="/admin/categories"
+            className="bg-tekhaf-50 hover:bg-tekhaf-100 text-tekhaf-700 border border-tekhaf-200 font-bold px-3 py-2 rounded-xl text-xs flex items-center gap-1.5 transition-colors whitespace-nowrap"
+            title="Open Categories Manager"
+          >
+            <FolderTree className="w-3.5 h-3.5" />
+            <span>Categories</span>
+          </Link>
         </div>
       </div>
 
@@ -365,8 +417,18 @@ export default function AdminProductsPage() {
                       </div>
                       <div>
                         <div className="font-bold text-slate-900">{tractor.title}</div>
-                        <div className="text-[10px] text-slate-400 font-mono">
-                          {tractor.modelNumber} • {tractor.transmission}
+                        <div className="text-[10px] text-slate-400 font-mono flex items-center gap-1.5 flex-wrap mt-0.5">
+                          <span>{tractor.modelNumber}</span>
+                          <span>•</span>
+                          <span>{tractor.transmission}</span>
+                          {tractor.category && (
+                            <>
+                              <span>•</span>
+                              <span className="text-tekhaf-700 bg-tekhaf-50 border border-tekhaf-200 px-1.5 py-0.5 rounded font-semibold text-[9px]">
+                                {tractor.category}
+                              </span>
+                            </>
+                          )}
                         </div>
                       </div>
                     </td>
@@ -470,7 +532,33 @@ export default function AdminProductsPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block font-semibold text-slate-700">Category</label>
+                    <Link
+                      href="/admin/categories"
+                      target="_blank"
+                      className="text-[10px] text-tekhaf-600 hover:underline flex items-center gap-0.5"
+                    >
+                      <Plus className="w-2.5 h-2.5" />
+                      <span>New Category</span>
+                    </Link>
+                  </div>
+                  <select
+                    value={form.category}
+                    onChange={(e) => setForm({ ...form, category: e.target.value })}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600 bg-white"
+                  >
+                    <option value="">-- Select Category --</option>
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.name}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
                 <div>
                   <label className="block font-semibold text-slate-700 mb-1">Brand *</label>
                   <select
@@ -487,18 +575,18 @@ export default function AdminProductsPage() {
                     <option value="Deutz-Fahr">Deutz-Fahr</option>
                   </select>
                 </div>
+              </div>
 
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Model Number *</label>
-                  <input
-                    type="text"
-                    required
-                    value={form.modelNumber}
-                    onChange={(e) => setForm({ ...form, modelNumber: e.target.value })}
-                    placeholder="e.g. MF 385 4WD"
-                    className="w-full p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600"
-                  />
-                </div>
+              <div>
+                <label className="block font-semibold text-slate-700 mb-1">Model Number *</label>
+                <input
+                  type="text"
+                  required
+                  value={form.modelNumber}
+                  onChange={(e) => setForm({ ...form, modelNumber: e.target.value })}
+                  placeholder="e.g. MF 385 4WD"
+                  className="w-full p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600"
+                />
               </div>
 
               <div className="grid grid-cols-3 gap-3">

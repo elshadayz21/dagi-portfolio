@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import {
   Upload,
   Image as ImageIcon,
@@ -17,12 +18,16 @@ import {
   Sparkles,
   RefreshCw,
   FolderOpen,
+  FolderTree,
+  Plus,
 } from "lucide-react";
 import { MediaAsset } from "@/lib/media-store";
 import { Pagination } from "@/components/pagination";
+import { CategoryItem } from "@/lib/category-store";
 
 export default function AdminMediaPage() {
   const [mediaItems, setMediaItems] = useState<MediaAsset[]>([]);
+  const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -36,7 +41,7 @@ export default function AdminMediaPage() {
   // Upload Modal State
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [uploadTitle, setUploadTitle] = useState("");
-  const [uploadCategory, setUploadCategory] = useState<MediaAsset["category"]>("Tractors");
+  const [uploadCategory, setUploadCategory] = useState<string>("Tractors");
   const [uploadUrl, setUploadUrl] = useState("");
   const [uploadPreview, setUploadPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -46,7 +51,7 @@ export default function AdminMediaPage() {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<MediaAsset | null>(null);
   const [editTitle, setEditTitle] = useState("");
-  const [editCategory, setEditCategory] = useState<MediaAsset["category"]>("Tractors");
+  const [editCategory, setEditCategory] = useState<string>("Tractors");
   const [editUrl, setEditUrl] = useState("");
   const [editPreview, setEditPreview] = useState<string | null>(null);
   const [savingEdit, setSavingEdit] = useState(false);
@@ -58,7 +63,20 @@ export default function AdminMediaPage() {
   useEffect(() => {
     fetchMedia();
     fetchActiveLogo();
+    fetchCategories();
   }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch("/api/categories?type=MEDIA");
+      const data = await res.json();
+      if (data.success && data.categories) {
+        setCategories(data.categories);
+      }
+    } catch (err) {
+      console.error("Failed to fetch media categories", err);
+    }
+  };
 
   const fetchActiveLogo = async () => {
     try {
@@ -295,6 +313,18 @@ export default function AdminMediaPage() {
     });
   }, [mediaItems, searchQuery, selectedCategory]);
 
+  const mediaCategories = useMemo(() => {
+    const set = new Set<string>();
+    categories.forEach((c) => set.add(c.name));
+    mediaItems.forEach((m) => {
+      if (m.category) set.add(m.category);
+    });
+    if (set.size === 0) {
+      ["Tractors", "Implements", "Showroom", "Branding", "Brochures"].forEach((c) => set.add(c));
+    }
+    return Array.from(set);
+  }, [categories, mediaItems]);
+
   const totalPages = Math.ceil(filteredMedia.length / pageSize) || 1;
 
   const paginatedMedia = useMemo(() => {
@@ -418,7 +448,7 @@ export default function AdminMediaPage() {
         </div>
 
         <div className="flex items-center gap-1.5 flex-wrap w-full md:w-auto">
-          {["ALL", "Tractors", "Implements", "Showroom", "Branding", "Brochures"].map((cat) => (
+          {["ALL", ...mediaCategories].map((cat) => (
             <button
               key={cat}
               onClick={() => {
@@ -434,6 +464,16 @@ export default function AdminMediaPage() {
               {cat}
             </button>
           ))}
+
+          {/* Manage Categories Shortcut */}
+          <Link
+            href="/admin/categories"
+            className="text-xs font-bold text-tekhaf-700 bg-tekhaf-50 hover:bg-tekhaf-100 border border-tekhaf-200 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 whitespace-nowrap shadow-sm"
+            title="Manage Media & Machinery Categories"
+          >
+            <FolderTree className="w-3.5 h-3.5" />
+            <span>Manage Categories</span>
+          </Link>
         </div>
       </div>
 
@@ -685,19 +725,29 @@ export default function AdminMediaPage() {
 
               {/* Category */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Category
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-semibold text-slate-700">
+                    Category
+                  </label>
+                  <Link
+                    href="/admin/categories"
+                    target="_blank"
+                    className="text-[10px] text-tekhaf-600 hover:underline flex items-center gap-0.5"
+                  >
+                    <Plus className="w-2.5 h-2.5" />
+                    <span>New Category</span>
+                  </Link>
+                </div>
                 <select
                   value={uploadCategory}
-                  onChange={(e) => setUploadCategory(e.target.value as any)}
+                  onChange={(e) => setUploadCategory(e.target.value)}
                   className="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600 bg-white font-medium"
                 >
-                  <option value="Tractors">Tractors & Machinery</option>
-                  <option value="Implements">Agricultural Implements</option>
-                  <option value="Showroom">Showroom & Warehouses</option>
-                  <option value="Branding">Branding & Logos</option>
-                  <option value="Brochures">Brochures & Specs</option>
+                  {mediaCategories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -831,19 +881,29 @@ export default function AdminMediaPage() {
 
               {/* Category */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Category
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-semibold text-slate-700">
+                    Category
+                  </label>
+                  <Link
+                    href="/admin/categories"
+                    target="_blank"
+                    className="text-[10px] text-tekhaf-600 hover:underline flex items-center gap-0.5"
+                  >
+                    <Plus className="w-2.5 h-2.5" />
+                    <span>New Category</span>
+                  </Link>
+                </div>
                 <select
                   value={editCategory}
-                  onChange={(e) => setEditCategory(e.target.value as any)}
+                  onChange={(e) => setEditCategory(e.target.value)}
                   className="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600 bg-white font-medium"
                 >
-                  <option value="Tractors">Tractors & Machinery</option>
-                  <option value="Implements">Agricultural Implements</option>
-                  <option value="Showroom">Showroom & Warehouses</option>
-                  <option value="Branding">Branding & Logos</option>
-                  <option value="Brochures">Brochures & Specs</option>
+                  {mediaCategories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
                 </select>
               </div>
 

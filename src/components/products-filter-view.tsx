@@ -22,11 +22,19 @@ export function ProductsFilterView({
   const dict = getDictionary(currentLocale);
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("ALL");
   const [selectedBrand, setSelectedBrand] = useState("ALL");
   const [selectedHP, setSelectedHP] = useState("ALL");
   const [selectedAvailability, setSelectedAvailability] = useState("ALL");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(6);
+
+  const categories = useMemo(() => {
+    const list = Array.from(
+      new Set(initialProducts.map((p) => p.category).filter(Boolean) as string[])
+    );
+    return ["ALL", ...list];
+  }, [initialProducts]);
 
   const brands = useMemo(() => {
     const list = Array.from(new Set(initialProducts.map((p) => p.brand)));
@@ -40,7 +48,11 @@ export function ProductsFilterView({
         !query ||
         product.title.toLowerCase().includes(query) ||
         product.modelNumber.toLowerCase().includes(query) ||
-        product.brand.toLowerCase().includes(query);
+        product.brand.toLowerCase().includes(query) ||
+        (product.category && product.category.toLowerCase().includes(query));
+
+      const matchesCategory =
+        selectedCategory === "ALL" || product.category === selectedCategory;
 
       const matchesBrand =
         selectedBrand === "ALL" || product.brand === selectedBrand;
@@ -55,9 +67,9 @@ export function ProductsFilterView({
         selectedAvailability === "ALL" ||
         product.availability === selectedAvailability;
 
-      return matchesSearch && matchesBrand && matchesHP && matchesAvailability;
+      return matchesSearch && matchesCategory && matchesBrand && matchesHP && matchesAvailability;
     });
-  }, [initialProducts, searchQuery, selectedBrand, selectedHP, selectedAvailability]);
+  }, [initialProducts, searchQuery, selectedCategory, selectedBrand, selectedHP, selectedAvailability]);
 
   const totalPages = Math.ceil(filteredProducts.length / pageSize) || 1;
 
@@ -68,6 +80,7 @@ export function ProductsFilterView({
 
   const handleResetFilters = () => {
     setSearchQuery("");
+    setSelectedCategory("ALL");
     setSelectedBrand("ALL");
     setSelectedHP("ALL");
     setSelectedAvailability("ALL");
@@ -92,7 +105,28 @@ export function ProductsFilterView({
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+          <div>
+            <label className="block text-xs font-semibold text-slate-600 mb-1">
+              Category
+            </label>
+            <select
+              value={selectedCategory}
+              onChange={(e) => {
+                setSelectedCategory(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full text-xs font-semibold px-3 py-2 rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-tekhaf-600"
+            >
+              <option value="ALL">All Categories</option>
+              {categories.filter((c) => c !== "ALL").map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div>
             <label className="block text-xs font-semibold text-slate-600 mb-1">
               Brand
@@ -204,10 +238,17 @@ export function ProductsFilterView({
 
               <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                 <div>
-                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                    {tractor.brand}
-                  </span>
-                  <h3 className="text-base font-bold text-slate-900 mt-0.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                      {tractor.brand}
+                    </span>
+                    {tractor.category && (
+                      <span className="text-[10px] font-semibold text-tekhaf-700 bg-tekhaf-50 border border-tekhaf-200 px-2 py-0.5 rounded-md">
+                        {tractor.category}
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="text-base font-bold text-slate-900 mt-1">
                     <Link
                       href={`/${currentLocale}/products/${tractor.slug}`}
                       className="hover:text-tekhaf-700 transition-colors"

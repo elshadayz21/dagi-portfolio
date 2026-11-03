@@ -6,7 +6,7 @@ export interface MediaAsset {
   url: string;
   format: string;
   size: string;
-  category: "Tractors" | "Implements" | "Showroom" | "Branding" | "Brochures";
+  category: string;
   createdAt: string;
 }
 

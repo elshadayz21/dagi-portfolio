@@ -1,0 +1,92 @@
+[
+  {
+    "id": "cat-heavy-4wd",
+    "name": "Heavy-Duty 4WD Tractors",
+    "slug": "heavy-duty-4wd-tractors",
+    "type": "PRODUCT",
+    "description": "High-horsepower (80 HP+) 4-wheel drive tractors designed for deep ploughing and large commercial grain fields.",
+    "isDefault": true,
+    "createdAt": "2026-10-04T06:16:07.527Z"
+  },
+  {
+    "id": "cat-utility-medium",
+    "name": "Utility & Medium Tractors",
+    "slug": "utility-medium-tractors",
+    "type": "PRODUCT",
+    "description": "Balanced 65-75 HP tractors engineered for multipurpose cultivation, planting, harrowing, and trailer transport.",
+    "isDefault": true,
+    "createdAt": "2026-10-06T06:16:07.527Z"
+  },
+  {
+    "id": "cat-row-crop-cabin",
+    "name": "Deluxe Cabin & Row-Crop Tractors",
+    "slug": "deluxe-cabin-row-crop-tractors",
+    "type": "PRODUCT",
+    "description": "Enclosed air-conditioned cabin tractors for dust-free heavy fieldwork in lowland, sugarcane, and wheat regions.",
+    "isDefault": true,
+    "createdAt": "2026-10-09T06:16:07.527Z"
+  },
+  {
+    "id": "cat-implements-plows",
+    "name": "Implements, Disc Ploughs & Harvesters",
+    "slug": "implements-disc-ploughs-harvesters",
+    "type": "BOTH",
+    "description": "Heavy-duty 3-disc and 4-disc ploughs, rotary tillers, seed drills, balers, and threshing attachments.",
+    "isDefault": true,
+    "createdAt": "2026-10-12T06:16:07.527Z"
+  },
+  {
+    "id": "cat-spare-parts",
+    "name": "Genuine Spare Parts & Powertrain",
+    "slug": "genuine-spare-parts-powertrain",
+    "type": "BOTH",
+    "description": "Factory Perkins filters, hydraulic pumps, clutches, PTO shafts, and authentic manufacturer components.",
+    "isDefault": true,
+    "createdAt": "2026-10-14T06:16:07.527Z"
+  },
+  {
+    "id": "cat-media-tractors",
+    "name": "Tractors",
+    "slug": "tractors",
+    "type": "MEDIA",
+    "description": "Field and studio imagery of tractor machinery, cabins, and operational demonstrations.",
+    "isDefault": true,
+    "createdAt": "2026-10-16T06:16:07.527Z"
+  },
+  {
+    "id": "cat-media-showroom",
+    "name": "Showroom & Yard",
+    "slug": "showroom-yard",
+    "type": "MEDIA",
+    "description": "Photos of Tekhaf central showroom, Kaliti machinery yard, and spare parts depot.",
+    "isDefault": true,
+    "createdAt": "2026-10-19T06:16:07.527Z"
+  },
+  {
+    "id": "cat-media-branding",
+    "name": "Branding & Logos",
+    "slug": "branding-logos",
+    "type": "MEDIA",
+    "description": "Brand emblems, vector tractor badges, partner logos, and official certification graphics.",
+    "isDefault": true,
+    "createdAt": "2026-10-22T06:16:07.527Z"
+  },
+  {
+    "id": "cat-media-brochures",
+    "name": "Brochures & Specs",
+    "slug": "brochures-specs",
+    "type": "MEDIA",
+    "description": "Technical datasheets, machinery brochures, and official quotation documents.",
+    "isDefault": true,
+    "createdAt": "2026-10-24T06:16:07.527Z"
+  },
+  {
+    "id": "cat-media-handover",
+    "name": "Field Deliveries & Handover",
+    "slug": "field-deliveries-handover",
+    "type": "MEDIA",
+    "description": "On-farm machinery delivery and customer training photos across Ethiopian farming cooperatives.",
+    "isDefault": false,
+    "createdAt": "2026-10-29T06:16:07.527Z"
+  }
+]
