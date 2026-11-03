@@ -61,6 +61,10 @@ export interface SiteCMSData {
   // Dynamic Social Media Links
   socials: SocialLinks;
 
+  // Dynamic Language Options
+  enabledLocales: string[];
+  defaultLocale: string;
+
   // Backwards-compatible convenience properties (derived from primary entries)
   phone: string;
   phoneDisplay: string;
@@ -165,6 +169,10 @@ let inMemoryCMS: SiteCMSData = {
     phone: "tel:+251911234567",
     email: "mailto:dagim@tekhaf.com",
   },
+
+  // Dynamic Language Options
+  enabledLocales: ["en", "am", "or", "so", "sid"],
+  defaultLocale: "en",
 
   // Auto-calculated defaults
   phone: "+251911234567",
@@ -320,6 +328,18 @@ export async function addOrUpdateTractor(product: TractorProduct) {
     inMemoryInventory = [product, ...inMemoryInventory];
   }
   return inMemoryInventory;
+}
+
+export async function patchTractor(id: string, updates: Partial<TractorProduct>) {
+  const existingIdx = inMemoryInventory.findIndex((p) => p.id === id);
+  if (existingIdx >= 0) {
+    inMemoryInventory[existingIdx] = {
+      ...inMemoryInventory[existingIdx],
+      ...updates,
+    };
+    return inMemoryInventory[existingIdx];
+  }
+  return null;
 }
 
 export async function deleteTractor(id: string) {

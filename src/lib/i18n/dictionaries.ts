@@ -370,6 +370,33 @@ export const dictionaries: Record<Locale, Dictionary> = {
   },
 };
 
+const dynamicDictionaries: Record<Locale, Dictionary> = {
+  en: { ...dictionaries.en },
+  am: { ...dictionaries.am },
+  or: { ...dictionaries.or },
+  so: { ...dictionaries.so },
+  sid: { ...dictionaries.sid },
+};
+
 export function getDictionary(locale: Locale): Dictionary {
-  return dictionaries[locale] || dictionaries.en;
+  return dynamicDictionaries[locale] || dynamicDictionaries.en || dictionaries.en;
+}
+
+export function getAllDictionaries(): Record<Locale, Dictionary> {
+  return dynamicDictionaries;
+}
+
+export function updateDictionary(locale: Locale, updates: Partial<Dictionary>): Dictionary {
+  if (dynamicDictionaries[locale]) {
+    dynamicDictionaries[locale] = {
+      ...dynamicDictionaries[locale],
+      ...updates,
+      common: { ...dynamicDictionaries[locale].common, ...(updates.common || {}) },
+      nav: { ...dynamicDictionaries[locale].nav, ...(updates.nav || {}) },
+      hero: { ...dynamicDictionaries[locale].hero, ...(updates.hero || {}) },
+      productsPage: { ...dynamicDictionaries[locale].productsPage, ...(updates.productsPage || {}) },
+      contactForm: { ...dynamicDictionaries[locale].contactForm, ...(updates.contactForm || {}) },
+    };
+  }
+  return dynamicDictionaries[locale];
 }

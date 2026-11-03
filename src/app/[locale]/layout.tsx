@@ -118,6 +118,7 @@ export default async function LocaleLayout({
         phoneDisplay={cms.phoneDisplay}
         phone={cms.phone}
         customLogoUrl={cms.customLogoUrl}
+        enabledLocales={cms.enabledLocales}
       />
 
       {/* Floating Social Icons on the Left (WhatsApp, Telegram, LinkedIn, Phone, Email) */}

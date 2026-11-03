@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getAllLeads } from "@/lib/leads-store";
-import { tractorInventory } from "@/lib/data/inventory";
+import { getLiveTractors } from "@/lib/cms-store";
 import { dagimProfile } from "@/lib/data/profile";
 import { getActivityLogs } from "@/lib/activity-store";
 import {
@@ -28,7 +28,8 @@ export default async function AdminDashboardPage() {
   const wonLeads = leads.filter((l) => l.status === "WON").length;
   const negotiatingLeads = leads.filter((l) => l.status === "NEGOTIATING").length;
   const contactedLeads = leads.filter((l) => l.status === "CONTACTED" || l.status === "INTERESTED" || l.status === "NEGOTIATING" || l.status === "WON").length;
-  const inStockTractors = tractorInventory.filter((t) => t.availability === "IN_STOCK").length;
+  const liveTractors = await getLiveTractors();
+  const inStockTractors = liveTractors.filter((t) => t.availability === "IN_STOCK").length;
 
   const conversionRate = totalLeads > 0 ? ((wonLeads / totalLeads) * 100).toFixed(1) : "0";
 

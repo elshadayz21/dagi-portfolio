@@ -17,6 +17,7 @@ import {
   Share2,
   Clock,
   ExternalLink,
+  Globe,
 } from "lucide-react";
 import {
   ContactPhone,
@@ -40,6 +41,8 @@ export default function AdminProfilePage() {
     locations: OfficeLocation[];
     emails: ContactEmail[];
     socials: SocialLinks;
+    enabledLocales: string[];
+    defaultLocale: string;
   }>({
     representativeName: "Dagim Melese",
     jobTitle: "Agricultural Machinery Specialist",
@@ -60,6 +63,8 @@ export default function AdminProfilePage() {
       youtube: "",
       tiktok: "",
     },
+    enabledLocales: ["en", "am", "or", "so", "sid"],
+    defaultLocale: "en",
   });
 
   const [loading, setLoading] = useState(false);
@@ -94,6 +99,10 @@ export default function AdminProfilePage() {
               youtube: d.socials?.youtube || "",
               tiktok: d.socials?.tiktok || "",
             },
+            enabledLocales: d.enabledLocales && d.enabledLocales.length > 0
+              ? d.enabledLocales
+              : ["en", "am", "or", "so", "sid"],
+            defaultLocale: d.defaultLocale || "en",
           });
         }
       })
@@ -180,6 +189,24 @@ export default function AdminProfilePage() {
     });
   };
 
+  const toggleLocale = (code: string) => {
+    if (profile.enabledLocales.includes(code)) {
+      if (profile.enabledLocales.length === 1) {
+        alert("At least one language must remain active on the platform.");
+        return;
+      }
+      setProfile({
+        ...profile,
+        enabledLocales: profile.enabledLocales.filter((c) => c !== code),
+      });
+    } else {
+      setProfile({
+        ...profile,
+        enabledLocales: [...profile.enabledLocales, code],
+      });
+    }
+  };
+
   // Handle Save
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -205,6 +232,8 @@ export default function AdminProfilePage() {
           phones: profile.phones,
           locations: profile.locations,
           emails: profile.emails,
+          enabledLocales: profile.enabledLocales,
+          defaultLocale: profile.defaultLocale,
           socials: {
             ...profile.socials,
             phone: primaryPhone ? `tel:${primaryPhone.phone}` : undefined,
@@ -953,6 +982,84 @@ export default function AdminProfilePage() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* SECTION 7: Regional Languages & Dynamic Multilingual Controls */}
+        <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+          <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-2.5">
+              <Globe className="w-4 h-4 text-tekhaf-700" />
+              <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+                7. Regional Languages & Dynamic Multilingual Setup
+              </h2>
+            </div>
+            <span className="text-[11px] font-semibold text-tekhaf-700 bg-tekhaf-50 px-2.5 py-1 rounded-lg border border-tekhaf-200">
+              {profile.enabledLocales.length} Languages Active
+            </span>
+          </div>
+
+          <p className="text-xs text-slate-500 leading-relaxed">
+            Choose which languages are active on the platform. The site navigation and mobile drawer will dynamically show only enabled languages in the language switcher.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            {[
+              { code: "en", label: "English", desc: "Default commercial and trade language" },
+              { code: "am", label: "Amharic (አማርኛ)", desc: "Federal working language of Ethiopia" },
+              { code: "or", label: "Afaan Oromoo", desc: "Oromia Region agricultural belt & wheat farmers" },
+              { code: "so", label: "Somali (Soomaali)", desc: "Somali Regional State farming & agro-pastoral zones" },
+              { code: "sid", label: "Sidama (Sidaamu Afoo)", desc: "Sidama agrarian belt & Hawassa coffee growers" },
+            ].map((loc) => {
+              const isEnabled = profile.enabledLocales.includes(loc.code);
+              const isDefault = profile.defaultLocale === loc.code;
+              return (
+                <div
+                  key={loc.code}
+                  className={`p-3.5 rounded-xl border transition-all ${
+                    isEnabled
+                      ? "bg-slate-50 border-tekhaf-300"
+                      : "bg-white border-slate-200 opacity-60"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <label className="flex items-start gap-2.5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isEnabled}
+                        onChange={() => toggleLocale(loc.code)}
+                        className="mt-0.5 rounded border-slate-300 text-tekhaf-600 focus:ring-tekhaf-500"
+                      />
+                      <div>
+                        <div className="font-bold text-slate-900 flex items-center gap-1.5">
+                          <span>{loc.label}</span>
+                          <span className="text-[10px] text-slate-400 uppercase font-mono">
+                            [{loc.code}]
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                          {loc.desc}
+                        </div>
+                      </div>
+                    </label>
+
+                    {isEnabled && (
+                      <button
+                        type="button"
+                        onClick={() => setProfile({ ...profile, defaultLocale: loc.code })}
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded transition-colors shrink-0 ${
+                          isDefault
+                            ? "bg-tekhaf-700 text-white"
+                            : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100"
+                        }`}
+                      >
+                        {isDefault ? "Default" : "Set Default"}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 

@@ -9,7 +9,9 @@ export interface ActivityLogItem {
     | "MEDIA_DELETED"
     | "LOGO_UPDATED"
     | "PROFILE_UPDATED"
+    | "PRODUCT_ADDED"
     | "PRODUCT_UPDATED"
+    | "PRODUCT_DELETED"
     | "TRANSLATION_UPDATED";
   category: "LEADS" | "MEDIA" | "BRAND" | "PRODUCTS" | "SYSTEM";
   title: string;

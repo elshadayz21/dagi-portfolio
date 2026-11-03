@@ -60,6 +60,7 @@ export default function AdminActivityLogPage() {
     return {
       total: logs.length,
       leads: logs.filter((l) => l.category === "LEADS").length,
+      products: logs.filter((l) => l.category === "PRODUCTS").length,
       media: logs.filter((l) => l.category === "MEDIA").length,
       brand: logs.filter((l) => l.category === "BRAND").length,
     };
@@ -111,6 +112,14 @@ export default function AdminActivityLogPage() {
         return <span className="bg-indigo-50 text-indigo-700 border border-indigo-200 px-2 py-0.5 rounded-md text-[10px] font-bold">Logo & Favicon</span>;
       case "PROFILE_UPDATED":
         return <span className="bg-teal-50 text-teal-700 border border-teal-200 px-2 py-0.5 rounded-md text-[10px] font-bold">Profile Update</span>;
+      case "PRODUCT_ADDED":
+        return <span className="bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded-md text-[10px] font-bold">Tractor Added</span>;
+      case "PRODUCT_UPDATED":
+        return <span className="bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.5 rounded-md text-[10px] font-bold">Tractor Updated</span>;
+      case "PRODUCT_DELETED":
+        return <span className="bg-rose-50 text-rose-800 border border-rose-200 px-2 py-0.5 rounded-md text-[10px] font-bold">Tractor Removed</span>;
+      case "TRANSLATION_UPDATED":
+        return <span className="bg-cyan-50 text-cyan-800 border border-cyan-200 px-2 py-0.5 rounded-md text-[10px] font-bold">Phrases Saved</span>;
       default:
         return <span className="bg-slate-100 text-slate-700 border border-slate-200 px-2 py-0.5 rounded-md text-[10px] font-bold">{action}</span>;
     }
@@ -193,7 +202,7 @@ export default function AdminActivityLogPage() {
         </div>
 
         <div className="flex items-center gap-1.5 flex-wrap w-full md:w-auto">
-          {["ALL", "LEADS", "MEDIA", "BRAND"].map((cat) => (
+          {["ALL", "LEADS", "PRODUCTS", "MEDIA", "BRAND", "SYSTEM"].map((cat) => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
