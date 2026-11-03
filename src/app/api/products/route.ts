@@ -84,6 +84,7 @@ export async function POST(req: NextRequest) {
 
     // Invalidate site cache so footer, products page, and homepage immediately reflect the update
     revalidatePath("/", "layout");
+    revalidatePath("/[locale]", "layout");
     revalidatePath("/[locale]/products", "page");
 
     // Log activity
@@ -131,6 +132,7 @@ export async function PATCH(req: NextRequest) {
     }
 
     revalidatePath("/", "layout");
+    revalidatePath("/[locale]", "layout");
     revalidatePath("/[locale]/products", "page");
 
     await logActivity(
@@ -173,6 +175,7 @@ export async function DELETE(req: NextRequest) {
     await deleteTractor(id);
 
     revalidatePath("/", "layout");
+    revalidatePath("/[locale]", "layout");
     revalidatePath("/[locale]/products", "page");
 
     await logActivity(

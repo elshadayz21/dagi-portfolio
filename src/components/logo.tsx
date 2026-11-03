@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface LogoProps {
   representativeName?: string;
@@ -21,6 +21,19 @@ export function Logo({
 }: LogoProps) {
   const [imageFailed, setImageFailed] = useState(false);
   const isLightText = className.includes("text-white");
+
+  // Reset failure state when custom logo URL changes
+  useEffect(() => {
+    setImageFailed(false);
+  }, [customLogoUrl]);
+
+  const cleanLogoUrl =
+    customLogoUrl &&
+    customLogoUrl !== "null" &&
+    customLogoUrl !== "undefined" &&
+    customLogoUrl.trim() !== ""
+      ? customLogoUrl.trim()
+      : null;
 
   // Fallback Vector Tractor SVG Emblem
   const defaultEmblem = (
@@ -48,11 +61,11 @@ export function Logo({
   return (
     <div className={`flex items-center gap-3 select-none ${className}`}>
       {/* Dynamic Emblem: Custom Uploaded Logo or Default Tractor Emblem */}
-      {customLogoUrl && !imageFailed ? (
+      {cleanLogoUrl && !imageFailed ? (
         <div className="w-11 h-11 rounded-xl bg-white flex items-center justify-center shrink-0 shadow-sm border border-slate-200 overflow-hidden p-1">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={customLogoUrl}
+            src={cleanLogoUrl}
             alt={representativeName}
             className="w-full h-full object-contain"
             onError={() => setImageFailed(true)}

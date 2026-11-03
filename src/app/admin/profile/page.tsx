@@ -18,6 +18,10 @@ import {
   Clock,
   ExternalLink,
   Globe,
+  Upload,
+  Camera,
+  User,
+  Image as ImageIcon,
 } from "lucide-react";
 import {
   ContactPhone,
@@ -72,6 +76,153 @@ export default function AdminProfilePage() {
   const [fetching, setFetching] = useState(true);
   const [savedNotice, setSavedNotice] = useState(false);
   const [noticeMessage, setNoticeMessage] = useState("");
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+
+  // Helper to downscale and optimize large device camera uploads
+  const processImageFile = (
+    file: File,
+    maxDim: number = 1400
+  ): Promise<{ dataUrl: string; size: string; format: string }> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const src = e.target?.result as string;
+        const img = new window.Image();
+        img.onload = () => {
+          let width = img.width;
+          let height = img.height;
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            resolve({
+              dataUrl: src,
+              size: `${Math.round(file.size / 1024)} KB`,
+              format: file.type.split("/")[1]?.toUpperCase() || "JPEG",
+            });
+            return;
+          }
+          ctx.drawImage(img, 0, 0, width, height);
+          const mime = file.type === "image/png" ? "image/png" : "image/jpeg";
+          const optimized = canvas.toDataURL(mime, 0.88);
+          const approxKB = Math.round((optimized.length * 3) / 4 / 1024);
+          resolve({
+            dataUrl: optimized,
+            size: `${approxKB} KB`,
+            format: mime.split("/")[1]?.toUpperCase() || "JPEG",
+          });
+        };
+        img.onerror = () => {
+          resolve({
+            dataUrl: src,
+            size: `${Math.round(file.size / 1024)} KB`,
+            format: "JPEG",
+          });
+        };
+        img.src = src;
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleProfilePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingPhoto(true);
+      const processed = await processImageFile(file, 1200);
+
+      // Save to media library so it's persisted in media-state.json
+      try {
+        await fetch("/api/media", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: `${profile.representativeName} - Profile Portrait`,
+            url: processed.dataUrl,
+            category: "Showroom",
+            format: processed.format,
+            size: processed.size,
+          }),
+        });
+      } catch (err) {
+        console.warn("Failed to sync photo to media library", err);
+      }
+
+      setProfile((prev) => ({ ...prev, profilePhoto: processed.dataUrl }));
+      setNoticeMessage("Profile photo uploaded from device! Click 'Save All CMS Settings' to apply.");
+      setSavedNotice(true);
+      setTimeout(() => setSavedNotice(false), 4500);
+    } catch {
+      alert("Failed to process photo upload.");
+    } finally {
+      setUploadingPhoto(false);
+      e.target.value = "";
+    }
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingLogo(true);
+      const isSvg = file.type.includes("svg") || file.name.endsWith(".svg");
+      let dataUrl = "";
+      let format = "PNG";
+      let sizeStr = `${Math.round(file.size / 1024)} KB`;
+
+      if (isSvg) {
+        const text = await file.text();
+        dataUrl = `data:image/svg+xml;utf8,${encodeURIComponent(text)}`;
+        format = "SVG";
+      } else {
+        const processed = await processImageFile(file, 800);
+        dataUrl = processed.dataUrl;
+        format = processed.format;
+        sizeStr = processed.size;
+      }
+
+      // Automatically sync to media library
+      try {
+        await fetch("/api/media", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: `${profile.companyName} - Custom Brand Logo & Favicon`,
+            url: dataUrl,
+            category: "Branding",
+            format,
+            size: sizeStr,
+          }),
+        });
+      } catch (err) {
+        console.warn("Failed to sync logo to media library", err);
+      }
+
+      setProfile((prev) => ({ ...prev, customLogoUrl: dataUrl }));
+      setNoticeMessage("Brand logo uploaded from device! Click 'Save All CMS Settings' to sync logo & favicon.");
+      setSavedNotice(true);
+      setTimeout(() => setSavedNotice(false), 4500);
+    } catch {
+      alert("Failed to process logo upload.");
+    } finally {
+      setUploadingLogo(false);
+      e.target.value = "";
+    }
+  };
 
   // Fetch current live CMS configuration on mount
   useEffect(() => {
@@ -301,6 +452,68 @@ export default function AdminProfilePage() {
             <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
               1. Brand & Consultant Identity
             </h2>
+          </div>
+
+          {/* Consultant Profile Photo & Avatar Management */}
+          <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/70 flex flex-col sm:flex-row items-center gap-5">
+            <div className="relative w-20 h-20 rounded-2xl overflow-hidden border-2 border-tekhaf-600 shadow-md shrink-0 bg-slate-200">
+              {profile.profilePhoto ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={profile.profilePhoto}
+                  alt={profile.representativeName}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-slate-400">
+                  <User className="w-8 h-8" />
+                </div>
+              )}
+              {uploadingPhoto && (
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                  <RefreshCw className="w-5 h-5 text-white animate-spin" />
+                </div>
+              )}
+            </div>
+
+            <div className="flex-1 space-y-2 text-center sm:text-left">
+              <div>
+                <span className="text-xs font-bold text-slate-900 block">
+                  Consultant Portrait Photo
+                </span>
+                <span className="text-[11px] text-slate-500">
+                  Displayed on the homepage hero, consultant bio card, contact hub, and social share previews.
+                </span>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 pt-1 justify-center sm:justify-start">
+                <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 bg-tekhaf-700 hover:bg-tekhaf-800 text-white font-bold text-xs rounded-xl shadow-sm transition-all disabled:opacity-50">
+                  <Upload className="w-3.5 h-3.5" />
+                  <span>{uploadingPhoto ? "Processing..." : "Upload Photo from Device"}</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleProfilePhotoUpload}
+                    disabled={uploadingPhoto}
+                    className="hidden"
+                  />
+                </label>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setProfile({
+                      ...profile,
+                      profilePhoto:
+                        "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=800&q=80",
+                    })
+                  }
+                  className="px-2.5 py-1.5 border border-slate-200 hover:bg-white text-slate-600 font-semibold text-xs rounded-xl transition-colors"
+                >
+                  Reset Default Photo
+                </button>
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
@@ -884,28 +1097,44 @@ export default function AdminProfilePage() {
             The browser tab favicon and mobile touch icon dynamically mirror your brand logo. Enter a custom image URL below, or leave it blank to use the official Dagim Melese tractor emblem.
           </p>
 
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Custom Logo URL (Cloudinary / CDN / Image URL)
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                Brand Emblem / Logo Source
               </label>
+              
+              <div className="flex flex-wrap items-center gap-2 mb-3">
+                <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 bg-tekhaf-700 hover:bg-tekhaf-800 text-white font-bold text-xs rounded-xl shadow-sm transition-all disabled:opacity-50">
+                  <Upload className="w-3.5 h-3.5" />
+                  <span>{uploadingLogo ? "Processing..." : "Upload Logo from Device"}</span>
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/svg+xml,image/webp"
+                    onChange={handleLogoUpload}
+                    disabled={uploadingLogo}
+                    className="hidden"
+                  />
+                </label>
+
+                {profile.customLogoUrl && (
+                  <button
+                    type="button"
+                    onClick={() => setProfile({ ...profile, customLogoUrl: "" })}
+                    className="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-rose-600 bg-white border border-slate-200 rounded-xl transition-colors"
+                  >
+                    Reset to Default Emblem
+                  </button>
+                )}
+              </div>
+
               <div className="flex gap-2">
                 <input
                   type="text"
                   value={profile.customLogoUrl}
                   onChange={(e) => setProfile({ ...profile, customLogoUrl: e.target.value })}
-                  placeholder="https://res.cloudinary.com/... or leave blank for default"
-                  className="flex-1 text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600 bg-white"
+                  placeholder="Or paste direct image URL (https://res.cloudinary.com/... or data:image/...)"
+                  className="flex-1 text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600 bg-white font-mono"
                 />
-                {profile.customLogoUrl && (
-                  <button
-                    type="button"
-                    onClick={() => setProfile({ ...profile, customLogoUrl: "" })}
-                    className="px-3 py-2 text-xs font-semibold text-slate-600 hover:text-rose-600 bg-white border border-slate-200 rounded-xl transition-colors"
-                  >
-                    Reset to Default
-                  </button>
-                )}
               </div>
             </div>
 

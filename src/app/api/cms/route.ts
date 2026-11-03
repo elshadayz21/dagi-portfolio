@@ -29,6 +29,7 @@ export async function POST(req: NextRequest) {
             phone: body.phone ?? existingProfile.phone,
             email: body.email ?? existingProfile.email,
             address: body.officeAddress ?? existingProfile.address,
+            profilePhoto: body.profilePhoto ?? existingProfile.profilePhoto,
             biography: body.biography ?? existingProfile.biography,
             whatsapp: body.socials?.whatsapp ?? existingProfile.whatsapp,
           },
@@ -59,6 +60,8 @@ export async function POST(req: NextRequest) {
 
     // Invalidate cached layouts so logo and favicon update across all pages
     revalidatePath("/", "layout");
+    revalidatePath("/[locale]", "layout");
+    revalidatePath("/api/favicon");
 
     // Log activity
     if (body.customLogoUrl !== undefined) {

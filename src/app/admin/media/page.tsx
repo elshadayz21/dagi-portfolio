@@ -44,6 +44,8 @@ export default function AdminMediaPage() {
   const [uploadCategory, setUploadCategory] = useState<string>("Tractors");
   const [uploadUrl, setUploadUrl] = useState("");
   const [uploadPreview, setUploadPreview] = useState<string | null>(null);
+  const [uploadFormat, setUploadFormat] = useState("JPEG");
+  const [uploadSize, setUploadSize] = useState("500 KB");
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -54,6 +56,8 @@ export default function AdminMediaPage() {
   const [editCategory, setEditCategory] = useState<string>("Tractors");
   const [editUrl, setEditUrl] = useState("");
   const [editPreview, setEditPreview] = useState<string | null>(null);
+  const [editFormat, setEditFormat] = useState("JPEG");
+  const [editSize, setEditSize] = useState("500 KB");
   const [savingEdit, setSavingEdit] = useState(false);
   const editFileInputRef = useRef<HTMLInputElement>(null);
 
@@ -121,8 +125,9 @@ export default function AdminMediaPage() {
   const setAsSiteLogo = async (url: string) => {
     try {
       setSettingLogoUrl(url);
-      const isCurrentlyActive = activeLogoUrl === url;
-      const targetUrl = isCurrentlyActive ? null : url;
+      const trimmedUrl = url.trim();
+      const isCurrentlyActive = activeLogoUrl?.trim() === trimmedUrl;
+      const targetUrl = isCurrentlyActive ? null : trimmedUrl;
 
       const res = await fetch("/api/cms", {
         method: "POST",
@@ -131,9 +136,10 @@ export default function AdminMediaPage() {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setActiveLogoUrl(targetUrl);
+        const newLogo = data.data?.customLogoUrl || null;
+        setActiveLogoUrl(newLogo);
         showToast(
-          targetUrl
+          newLogo
             ? "Asset set as active site logo & favicon!"
             : "Site logo reset to official tractor emblem!"
         );
@@ -147,8 +153,68 @@ export default function AdminMediaPage() {
     }
   };
 
+  // Helper to downscale and optimize large device camera uploads
+  const processImageFile = (
+    file: File
+  ): Promise<{ dataUrl: string; size: string; format: string }> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const src = e.target?.result as string;
+        const img = new window.Image();
+        img.onload = () => {
+          const maxDim = 1600;
+          let width = img.width;
+          let height = img.height;
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            resolve({
+              dataUrl: src,
+              size: `${Math.round(file.size / 1024)} KB`,
+              format: file.type.split("/")[1]?.toUpperCase() || "JPEG",
+            });
+            return;
+          }
+          ctx.drawImage(img, 0, 0, width, height);
+          const mime = file.type === "image/png" ? "image/png" : "image/jpeg";
+          const optimized = canvas.toDataURL(mime, 0.88);
+          const approxKB = Math.round((optimized.length * 3) / 4 / 1024);
+          resolve({
+            dataUrl: optimized,
+            size: `${approxKB} KB`,
+            format: mime.split("/")[1]?.toUpperCase() || "JPEG",
+          });
+        };
+        img.onerror = () => {
+          resolve({
+            dataUrl: src,
+            size: `${Math.round(file.size / 1024)} KB`,
+            format: "JPEG",
+          });
+        };
+        img.src = src;
+      };
+      reader.onerror = () => {
+        resolve({ dataUrl: "", size: "0 KB", format: "JPEG" });
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
   // Handle local file selection for Upload
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -157,13 +223,11 @@ export default function AdminMediaPage() {
       setUploadTitle(cleanName);
     }
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const result = event.target?.result as string;
-      setUploadPreview(result);
-      setUploadUrl(result);
-    };
-    reader.readAsDataURL(file);
+    const { dataUrl, size, format } = await processImageFile(file);
+    setUploadPreview(dataUrl);
+    setUploadUrl(dataUrl);
+    setUploadFormat(format);
+    setUploadSize(size);
   };
 
   // Submit New Upload
@@ -176,11 +240,6 @@ export default function AdminMediaPage() {
 
     setUploading(true);
     try {
-      const isDataUrl = uploadUrl.startsWith("data:");
-      const approxSize = isDataUrl
-        ? `${Math.round((uploadUrl.length * 3) / 4 / 1024)} KB`
-        : "680 KB";
-
       const res = await fetch("/api/media", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -188,8 +247,8 @@ export default function AdminMediaPage() {
           title: uploadTitle.trim(),
           url: uploadUrl,
           category: uploadCategory,
-          format: "JPEG",
-          size: approxSize,
+          format: uploadFormat || "JPEG",
+          size: uploadSize || "650 KB",
         }),
       });
 
@@ -200,12 +259,12 @@ export default function AdminMediaPage() {
         setUploadTitle("");
         setUploadUrl("");
         setUploadPreview(null);
-        showToast("New media asset successfully uploaded!");
+        showToast("New media asset successfully uploaded and saved!");
       } else {
         alert(data.error || "Failed to upload asset");
       }
     } catch {
-      alert("Error uploading media asset");
+      alert("Error uploading media asset. Please verify file format.");
     } finally {
       setUploading(false);
     }
@@ -218,21 +277,21 @@ export default function AdminMediaPage() {
     setEditCategory(item.category);
     setEditUrl(item.url);
     setEditPreview(item.url);
+    setEditFormat(item.format);
+    setEditSize(item.size);
     setEditModalOpen(true);
   };
 
   // Handle local file selection for Edit / Replace
-  const handleEditFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleEditFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const result = event.target?.result as string;
-      setEditPreview(result);
-      setEditUrl(result);
-    };
-    reader.readAsDataURL(file);
+    const { dataUrl, size, format } = await processImageFile(file);
+    setEditPreview(dataUrl);
+    setEditUrl(dataUrl);
+    setEditFormat(format);
+    setEditSize(size);
   };
 
   // Submit Edit / Replace
@@ -242,11 +301,6 @@ export default function AdminMediaPage() {
 
     setSavingEdit(true);
     try {
-      const isDataUrl = editUrl.startsWith("data:");
-      const approxSize = isDataUrl
-        ? `${Math.round((editUrl.length * 3) / 4 / 1024)} KB`
-        : editingItem.size;
-
       const res = await fetch("/api/media", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -255,7 +309,8 @@ export default function AdminMediaPage() {
           title: editTitle.trim(),
           url: editUrl,
           category: editCategory,
-          size: approxSize,
+          format: editFormat || editingItem.format,
+          size: editSize || editingItem.size,
         }),
       });
 
@@ -266,12 +321,12 @@ export default function AdminMediaPage() {
         );
         setEditModalOpen(false);
         setEditingItem(null);
-        showToast("Media asset updated successfully!");
+        showToast("Media asset updated and saved successfully!");
       } else {
         alert(data.error || "Failed to update asset");
       }
     } catch {
-      alert("Error updating media asset");
+      alert("Error updating media asset. Please try again.");
     } finally {
       setSavingEdit(false);
     }
@@ -575,12 +630,12 @@ export default function AdminMediaPage() {
                       onClick={() => setAsSiteLogo(item.url)}
                       disabled={settingLogoUrl === item.url}
                       className={`py-1.5 px-2.5 rounded-lg text-[11px] font-semibold border transition-all flex items-center gap-1.5 ${
-                        activeLogoUrl === item.url
+                        activeLogoUrl?.trim() === item.url.trim()
                           ? "bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-700 shadow-sm"
                           : "bg-tekhaf-50 hover:bg-tekhaf-100 text-tekhaf-700 border-tekhaf-200"
                       } disabled:opacity-60`}
                       title={
-                        activeLogoUrl === item.url
+                        activeLogoUrl?.trim() === item.url.trim()
                           ? "Currently active site logo & favicon (click to reset to default emblem)"
                           : "Use this image as active site logo & favicon"
                       }
@@ -590,7 +645,7 @@ export default function AdminMediaPage() {
                           <RefreshCw className="w-3 h-3 animate-spin" />
                           <span>Saving...</span>
                         </>
-                      ) : activeLogoUrl === item.url ? (
+                      ) : activeLogoUrl?.trim() === item.url.trim() ? (
                         <>
                           <CheckCircle2 className="w-3 h-3 text-white" />
                           <span>Active Logo</span>

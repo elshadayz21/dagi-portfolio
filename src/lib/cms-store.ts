@@ -184,6 +184,7 @@ const defaultInitialCMS: SiteCMSData = {
 };
 
 const CMS_FILE_PATH = path.join(process.cwd(), "src", "lib", "data", "cms-state.json");
+const INVENTORY_FILE_PATH = path.join(process.cwd(), "src", "lib", "data", "inventory-state.json");
 
 function loadPersistedCMS(): Partial<SiteCMSData> {
   try {
@@ -209,6 +210,33 @@ function savePersistedCMS(data: SiteCMSData) {
   }
 }
 
+function loadPersistedInventory(): TractorProduct[] | null {
+  try {
+    if (fs.existsSync(INVENTORY_FILE_PATH)) {
+      const raw = fs.readFileSync(INVENTORY_FILE_PATH, "utf-8");
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch (err) {
+    console.error("Failed to load inventory from disk:", err);
+  }
+  return null;
+}
+
+function savePersistedInventory(inventory: TractorProduct[]) {
+  try {
+    const dir = path.dirname(INVENTORY_FILE_PATH);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    fs.writeFileSync(INVENTORY_FILE_PATH, JSON.stringify(inventory, null, 2), "utf-8");
+  } catch (err) {
+    console.error("Failed to save inventory to disk:", err);
+  }
+}
+
 const globalForCMS = globalThis as unknown as {
   inMemoryCMS: SiteCMSData;
   inMemoryInventory: TractorProduct[];
@@ -223,7 +251,8 @@ if (!globalForCMS.inMemoryCMS) {
 }
 
 if (!globalForCMS.inMemoryInventory) {
-  globalForCMS.inMemoryInventory = [...tractorInventory];
+  const persistedInventory = loadPersistedInventory();
+  globalForCMS.inMemoryInventory = persistedInventory || [...tractorInventory];
 }
 
 let dbAvailable: boolean | null = null;
@@ -246,6 +275,12 @@ async function canQueryDb(): Promise<boolean> {
 }
 
 export async function getCMSData(): Promise<SiteCMSData> {
+  const persisted = loadPersistedCMS();
+  globalForCMS.inMemoryCMS = {
+    ...defaultInitialCMS,
+    ...globalForCMS.inMemoryCMS,
+    ...persisted,
+  };
   const current = globalForCMS.inMemoryCMS;
 
   try {
@@ -267,7 +302,7 @@ export async function getCMSData(): Promise<SiteCMSData> {
           phoneDisplay: primaryPhone?.display || current.phoneDisplay,
           email: profile?.email || primaryEmail?.email || current.email,
           officeAddress: profile?.address || `${primaryLoc?.address}, ${primaryLoc?.city}, ${primaryLoc?.country}` || current.officeAddress,
-          profilePhoto: profile?.profilePhoto || current.profilePhoto,
+          profilePhoto: current.profilePhoto || profile?.profilePhoto || defaultInitialCMS.profilePhoto,
           biography: profile?.biography || current.biography,
         };
       }
@@ -326,6 +361,11 @@ export async function updateCMSData(updates: Partial<SiteCMSData>): Promise<Site
 }
 
 export async function getLiveTractors(): Promise<TractorProduct[]> {
+  const persisted = loadPersistedInventory();
+  if (persisted && persisted.length > 0) {
+    globalForCMS.inMemoryInventory = persisted;
+  }
+
   try {
     if (await canQueryDb()) {
       const dbProducts = await prisma.product.findMany({
@@ -376,6 +416,7 @@ export async function addOrUpdateTractor(product: TractorProduct) {
   } else {
     globalForCMS.inMemoryInventory = [product, ...inventory];
   }
+  savePersistedInventory(globalForCMS.inMemoryInventory);
   return globalForCMS.inMemoryInventory;
 }
 
@@ -387,6 +428,7 @@ export async function patchTractor(id: string, updates: Partial<TractorProduct>)
       ...inventory[existingIdx],
       ...updates,
     };
+    savePersistedInventory(globalForCMS.inMemoryInventory);
     return inventory[existingIdx];
   }
   return null;
@@ -394,5 +436,6 @@ export async function patchTractor(id: string, updates: Partial<TractorProduct>)
 
 export async function deleteTractor(id: string) {
   globalForCMS.inMemoryInventory = globalForCMS.inMemoryInventory.filter((p) => p.id !== id);
+  savePersistedInventory(globalForCMS.inMemoryInventory);
   return globalForCMS.inMemoryInventory;
 }

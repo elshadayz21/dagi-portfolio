@@ -48,7 +48,6 @@ export async function generateMetadata({
       icon: [
         {
           url: iconUrl,
-          type: "image/png",
         },
       ],
       shortcut: [iconUrl],

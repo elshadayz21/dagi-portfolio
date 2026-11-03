@@ -50,7 +50,7 @@ export function Footer({
               jobTitle={jobTitle}
               companyName={companyName}
               customLogoUrl={customLogoUrl}
-              className="text-white brightness-200"
+              className="text-white"
             />
             <p className="text-xs text-slate-400 max-w-sm leading-relaxed pt-2">
               Agricultural machinery sales consultant facilitating heavy-duty tractor acquisition, genuine spare parts, and on-farm technician support throughout Ethiopia.

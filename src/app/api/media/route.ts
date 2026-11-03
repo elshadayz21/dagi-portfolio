@@ -7,6 +7,7 @@ import {
   MediaAsset,
 } from "@/lib/media-store";
 import { logActivity } from "@/lib/activity-store";
+import { revalidatePath } from "next/cache";
 
 export const dynamic = "force-dynamic";
 
@@ -49,6 +50,9 @@ export async function POST(req: NextRequest) {
       `Asset uploaded to ${newAsset.category} (${newAsset.size}, ${newAsset.format}).`,
       "Dagim Melese"
     );
+
+    revalidatePath("/admin/media");
+    revalidatePath("/admin/products");
 
     return NextResponse.json({
       success: true,
@@ -101,6 +105,9 @@ export async function PATCH(req: NextRequest) {
       "Dagim Melese"
     );
 
+    revalidatePath("/admin/media");
+    revalidatePath("/admin/products");
+
     return NextResponse.json({
       success: true,
       message: "Media asset successfully updated",
@@ -146,6 +153,9 @@ export async function DELETE(req: NextRequest) {
       `Asset permanently removed from the library.`,
       "Dagim Melese"
     );
+
+    revalidatePath("/admin/media");
+    revalidatePath("/admin/products");
 
     return NextResponse.json({
       success: true,

@@ -1,3 +1,5 @@
+import fs from "fs";
+import path from "path";
 import { tractorInventory } from "./data/inventory";
 
 export interface MediaAsset {
@@ -10,7 +12,9 @@ export interface MediaAsset {
   createdAt: string;
 }
 
-let inMemoryMedia: MediaAsset[] = [
+const MEDIA_FILE_PATH = path.join(process.cwd(), "src", "lib", "data", "media-state.json");
+
+const initialDefaultMedia: MediaAsset[] = [
   ...tractorInventory.flatMap((t, i) => [
     {
       id: `media-tractor-${t.id}-main`,
@@ -18,7 +22,7 @@ let inMemoryMedia: MediaAsset[] = [
       url: t.image,
       format: "JPEG",
       size: "820 KB",
-      category: "Tractors" as const,
+      category: "Tractors",
       createdAt: new Date(Date.now() - 3600 * 1000 * 24 * (i + 1)).toISOString(),
     },
     ...t.gallery.map((g, gi) => ({
@@ -27,7 +31,7 @@ let inMemoryMedia: MediaAsset[] = [
       url: g,
       format: "JPEG",
       size: "640 KB",
-      category: "Tractors" as const,
+      category: "Tractors",
       createdAt: new Date(Date.now() - 3600 * 1000 * 24 * (i + 1) + gi * 3600000).toISOString(),
     })),
   ]),
@@ -37,7 +41,7 @@ let inMemoryMedia: MediaAsset[] = [
     url: "https://images.unsplash.com/photo-1592878904946-b3cd8ae243d0?auto=format&fit=crop&w=600&q=80",
     format: "PNG",
     size: "120 KB",
-    category: "Branding" as const,
+    category: "Branding",
     createdAt: new Date(Date.now() - 3600 * 1000 * 48).toISOString(),
   },
   {
@@ -46,13 +50,55 @@ let inMemoryMedia: MediaAsset[] = [
     url: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1000&q=80",
     format: "JPEG",
     size: "1.4 MB",
-    category: "Showroom" as const,
+    category: "Showroom",
     createdAt: new Date(Date.now() - 3600 * 1000 * 72).toISOString(),
   },
 ];
 
+function loadPersistedMedia(): MediaAsset[] | null {
+  try {
+    if (fs.existsSync(MEDIA_FILE_PATH)) {
+      const raw = fs.readFileSync(MEDIA_FILE_PATH, "utf-8");
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch (err) {
+    console.error("Failed to load persisted media:", err);
+  }
+  return null;
+}
+
+function savePersistedMedia(media: MediaAsset[]) {
+  try {
+    const dir = path.dirname(MEDIA_FILE_PATH);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    fs.writeFileSync(MEDIA_FILE_PATH, JSON.stringify(media, null, 2), "utf-8");
+  } catch (err) {
+    console.error("Failed to save media to disk:", err);
+  }
+}
+
+const globalForMedia = globalThis as unknown as {
+  inMemoryMedia: MediaAsset[];
+};
+
+if (!globalForMedia.inMemoryMedia) {
+  const persisted = loadPersistedMedia();
+  globalForMedia.inMemoryMedia = persisted || [...initialDefaultMedia];
+}
+
 export async function getMediaAssets(): Promise<MediaAsset[]> {
-  return inMemoryMedia;
+  const persisted = loadPersistedMedia();
+  if (persisted && persisted.length > 0) {
+    globalForMedia.inMemoryMedia = persisted;
+  } else if (!globalForMedia.inMemoryMedia || globalForMedia.inMemoryMedia.length === 0) {
+    globalForMedia.inMemoryMedia = [...initialDefaultMedia];
+  }
+  return globalForMedia.inMemoryMedia;
 }
 
 export async function addMediaAsset(
@@ -64,7 +110,9 @@ export async function addMediaAsset(
     createdAt: new Date().toISOString(),
   };
 
-  inMemoryMedia = [newAsset, ...inMemoryMedia];
+  globalForMedia.inMemoryMedia = [newAsset, ...globalForMedia.inMemoryMedia];
+  savePersistedMedia(globalForMedia.inMemoryMedia);
+
   return newAsset;
 }
 
@@ -72,19 +120,29 @@ export async function updateMediaAsset(
   id: string,
   updates: Partial<Omit<MediaAsset, "id" | "createdAt">>
 ): Promise<MediaAsset | null> {
-  const index = inMemoryMedia.findIndex((m) => m.id === id);
+  const list = globalForMedia.inMemoryMedia;
+  const index = list.findIndex((m) => m.id === id);
   if (index === -1) return null;
 
-  inMemoryMedia[index] = {
-    ...inMemoryMedia[index],
+  list[index] = {
+    ...list[index],
     ...updates,
   };
 
-  return inMemoryMedia[index];
+  savePersistedMedia(globalForMedia.inMemoryMedia);
+
+  return list[index];
 }
 
 export async function deleteMediaAsset(id: string): Promise<boolean> {
-  const initialLen = inMemoryMedia.length;
-  inMemoryMedia = inMemoryMedia.filter((m) => m.id !== id);
-  return inMemoryMedia.length < initialLen;
+  const list = globalForMedia.inMemoryMedia;
+  const initialLen = list.length;
+  globalForMedia.inMemoryMedia = list.filter((m) => m.id !== id);
+  const changed = globalForMedia.inMemoryMedia.length < initialLen;
+
+  if (changed) {
+    savePersistedMedia(globalForMedia.inMemoryMedia);
+  }
+
+  return changed;
 }

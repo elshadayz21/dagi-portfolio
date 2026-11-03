@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { TractorProduct } from "@/lib/data/inventory";
@@ -17,6 +17,7 @@ import {
   Search,
   Check,
   FolderTree,
+  Upload,
 } from "lucide-react";
 import { Pagination } from "@/components/pagination";
 import { CategoryItem } from "@/lib/category-store";
@@ -36,6 +37,8 @@ export default function AdminProductsPage() {
   const [categoryFilter, setCategoryFilter] = useState("ALL");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(8);
+  const tractorFileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const [form, setForm] = useState({
     title: "",
@@ -141,6 +144,69 @@ export default function AdminProductsPage() {
       isFeatured: p.isFeatured,
     });
     setShowModal(true);
+  };
+
+  const handleTractorImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const src = ev.target?.result as string;
+        const img = new window.Image();
+        img.onload = async () => {
+          const maxDim = 1600;
+          let width = img.width;
+          let height = img.height;
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            setForm((prev) => ({ ...prev, image: src }));
+            setUploadingImage(false);
+            return;
+          }
+          ctx.drawImage(img, 0, 0, width, height);
+          const optimized = canvas.toDataURL("image/jpeg", 0.88);
+          setForm((prev) => ({ ...prev, image: optimized }));
+          setUploadingImage(false);
+
+          // Also save into media library
+          try {
+            await fetch("/api/media", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                title: `${form.title || "Tractor"} - Uploaded from Catalog`,
+                url: optimized,
+                category: "Tractors",
+                format: "JPEG",
+                size: `${Math.round((optimized.length * 3) / 4 / 1024)} KB`,
+              }),
+            });
+            fetchMedia();
+          } catch {
+            // ignore
+          }
+        };
+        img.src = src;
+      };
+      reader.readAsDataURL(file);
+    } catch {
+      setUploadingImage(false);
+    }
   };
 
   const handleSaveTractor = async (e: React.FormEvent) => {
@@ -651,30 +717,56 @@ export default function AdminProductsPage() {
                 </div>
               </div>
 
-              {/* Image Input with Media Library Picker */}
+              {/* Image Input with Media Library Picker & Direct Device Upload */}
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="font-semibold text-slate-700">Tractor Image URL *</label>
-                  {mediaList.length > 0 && (
+                  <div className="flex items-center gap-2">
                     <button
                       type="button"
-                      onClick={() => setShowMediaPicker(!showMediaPicker)}
+                      onClick={() => tractorFileInputRef.current?.click()}
                       className="text-[11px] text-tekhaf-700 font-semibold hover:underline flex items-center gap-1"
                     >
-                      <ImageIcon className="w-3 h-3" />
-                      <span>{showMediaPicker ? "Hide Media Assets" : "Pick from Uploaded Media"}</span>
+                      <Upload className="w-3 h-3" />
+                      <span>{uploadingImage ? "Processing..." : "Upload from Device"}</span>
                     </button>
-                  )}
+                    {mediaList.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setShowMediaPicker(!showMediaPicker)}
+                        className="text-[11px] text-tekhaf-700 font-semibold hover:underline flex items-center gap-1"
+                      >
+                        <ImageIcon className="w-3 h-3" />
+                        <span>{showMediaPicker ? "Hide Media" : "Pick from Library"}</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <input
-                  type="text"
-                  required
-                  value={form.image}
-                  onChange={(e) => setForm({ ...form, image: e.target.value })}
-                  placeholder="https://..."
-                  className="w-full p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600"
+                  ref={tractorFileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleTractorImageUpload}
+                  className="hidden"
                 />
+
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    required
+                    value={form.image}
+                    onChange={(e) => setForm({ ...form, image: e.target.value })}
+                    placeholder="https://... or upload above"
+                    className="flex-1 p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600 font-mono text-[11px]"
+                  />
+                  {form.image && (
+                    <div className="w-10 h-10 rounded-lg overflow-hidden border border-slate-200 bg-slate-100 shrink-0">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={form.image} alt="Preview" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                </div>
 
                 {/* Media Picker Grid */}
                 {showMediaPicker && (
