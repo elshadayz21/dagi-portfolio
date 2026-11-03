@@ -20,8 +20,11 @@ export interface ActivityLogItem {
     | "CATEGORY_ADDED"
     | "CATEGORY_UPDATED"
     | "CATEGORY_DELETED"
+    | "LOCATION_ADDED"
+    | "LOCATION_UPDATED"
+    | "LOCATION_DELETED"
     | "TRANSLATION_UPDATED";
-  category: "LEADS" | "MEDIA" | "GALLERY" | "BRAND" | "PRODUCTS" | "SYSTEM";
+  category: "LEADS" | "MEDIA" | "GALLERY" | "BRAND" | "PRODUCTS" | "LOCATIONS" | "SYSTEM";
   title: string;
   details: string;
   actor: string;

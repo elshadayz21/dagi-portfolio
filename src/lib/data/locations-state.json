@@ -1,0 +1,197 @@
+[
+  {
+    "id": "loc-adama",
+    "name": "Adama",
+    "region": "Oromia",
+    "slug": "tractors-adama",
+    "title": "Tractor Sales & Implement Center in Adama (Nazret)",
+    "subtitle": "Central Oromia Grain Hub, Wonji Sugar Belt & Fast Implement Supply",
+    "heroImage": "https://images.unsplash.com/photo-1592878904946-b3cd8ae243d0?auto=format&fit=crop&w=1200&q=80",
+    "description": "Adama serves as the central transport and agricultural gateway connecting East Shewa, Arsi, and the Awash River basin. Tekhaf Trading provides high-torque 4WD tractors, disc ploughs, and rapid maintenance teams dispatched from the expressway corridor.",
+    "farmingContext": "High-yield maize, teff, sugarcane, haricot bean, and commercial irrigated vegetable farming requiring reliable 4-disc tillage.",
+    "recommendedHorsepower": "75 HP to 95 HP 4WD",
+    "popularTractors": [
+      "Massey Ferguson MF 385 4WD",
+      "Lovol TB754 4WD",
+      "Massey Ferguson MF 375"
+    ],
+    "hubOffice": "Adama Expressway Corridor, Wonji Road Junction",
+    "phone": "+251 91 123 4567",
+    "active": true,
+    "order": 1,
+    "createdAt": "2026-10-20T09:20:04.655Z"
+  },
+  {
+    "id": "loc-bishoftu",
+    "name": "Bishoftu",
+    "region": "Oromia",
+    "slug": "tractors-bishoftu",
+    "title": "Farm Tractors & Horticulture Machinery in Bishoftu (Debre Zeit)",
+    "subtitle": "Modern Agri-business, Feed Mills & Intensive Teff-Wheat Cultivation",
+    "heroImage": "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80",
+    "description": "Located 45 km southeast of Addis Ababa, Bishoftu is a premier commercial farming district. Dagim Melese advises commercial farmers, poultry feed producers, and cooperative unions on compact and medium-duty tractor acquisitions.",
+    "farmingContext": "Intensive teff, wheat, dairy fodder, and greenhouse horticulture requiring versatile PTO-driven rotary tillers and precision seeders.",
+    "recommendedHorsepower": "65 HP to 85 HP",
+    "popularTractors": [
+      "Lovol TB754 4WD",
+      "Massey Ferguson MF 375 (75 HP)"
+    ],
+    "hubOffice": "Old Toll Gate Commercial Zone, Bishoftu",
+    "phone": "+251 91 123 4567",
+    "active": true,
+    "order": 2,
+    "createdAt": "2026-10-22T09:20:04.657Z"
+  },
+  {
+    "id": "loc-bahir-dar",
+    "name": "Bahir Dar",
+    "region": "Amhara",
+    "slug": "tractors-bahir-dar",
+    "title": "Agricultural Equipment & Tractors in Bahir Dar & Lake Tana Basin",
+    "subtitle": "Serving West Gojjam, Fogera Plains Rice, and Maize Cooperatives",
+    "heroImage": "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=1200&q=80",
+    "description": "Bahir Dar anchors the agricultural mechanization of Northwest Ethiopia. From the rich vertisols of West Gojjam to the Fogera rice plains, Tekhaf Trading delivers tractors fitted with paddy-tread and heavy tillage implements.",
+    "farmingContext": "Commercial rice harvesting, teff, maize, niger seed, and Gojjam highland wheat needing heavy-duty disc harrows and PTO threshers.",
+    "recommendedHorsepower": "85 HP to 110 HP 4WD",
+    "popularTractors": [
+      "Massey Ferguson MF 385 4WD",
+      "Lovol TD904 A/C Cabin",
+      "New Holland TT75"
+    ],
+    "hubOffice": "Felege Hiwot Commercial Strip, Bahir Dar",
+    "phone": "+251 91 123 4567",
+    "active": true,
+    "order": 3,
+    "createdAt": "2026-10-24T09:20:04.657Z"
+  },
+  {
+    "id": "loc-mekele",
+    "name": "Mekele",
+    "region": "Tigray",
+    "slug": "tractors-mekele",
+    "title": "Tractor Sales & Agricultural Restoration Hub in Mekele",
+    "subtitle": "Heavy Machinery for Raya Valley, Enderta Highlands & Western Lowlands",
+    "heroImage": "https://images.unsplash.com/photo-1516253593875-bd7ba052fbc5?auto=format&fit=crop&w=1200&q=80",
+    "description": "Supporting agricultural revival across the fertile Raya Valley and highland commercial farms. Tekhaf Trading provides genuine Perkins-powered tractors with heavy-duty cooling packages and genuine spare parts availability.",
+    "farmingContext": "Raya valley sorghum, sesame, teff, onion, and highland irrigation requiring rugged mechanical reliability and dust-sealed air filters.",
+    "recommendedHorsepower": "75 HP to 90 HP",
+    "popularTractors": [
+      "Massey Ferguson MF 385 4WD",
+      "Lovol TB754 4WD"
+    ],
+    "hubOffice": "Adi Haki Commercial District, Mekele",
+    "phone": "+251 91 123 4567",
+    "active": true,
+    "order": 4,
+    "createdAt": "2026-10-26T09:20:04.657Z"
+  },
+  {
+    "id": "loc-addis-ababa",
+    "name": "Addis Ababa",
+    "region": "Addis Ababa",
+    "slug": "tractors-addis-ababa",
+    "title": "Tractor Sales & Central Hub in Addis Ababa",
+    "subtitle": "Tekhaf Trading Central Showroom, Kaliti Yard & Rapid Spare Parts Depot",
+    "heroImage": "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80",
+    "description": "Located at Bole Medhanialem in Addis Ababa, Tekhaf Trading serves as Ethiopia's central agricultural machinery headquarters with pre-delivery inspection facilities in Kaliti.",
+    "farmingContext": "Central dispatch, peri-urban horticulture, contracting fleet management, and nationwide duty-free documentation assistance.",
+    "recommendedHorsepower": "75 HP to 120 HP (Full Range)",
+    "popularTractors": [
+      "Massey Ferguson MF 385 4WD",
+      "Lovol TB754 4WD",
+      "New Holland TT75"
+    ],
+    "hubOffice": "Tekhaf Tower, Bole Medhanialem, Addis Ababa",
+    "phone": "+251 91 123 4567",
+    "active": true,
+    "order": 5,
+    "createdAt": "2026-10-04T09:20:04.657Z"
+  },
+  {
+    "id": "loc-oromia",
+    "name": "Arsi & Bale",
+    "region": "Oromia",
+    "slug": "tractors-oromia",
+    "title": "Heavy-Duty Tractors for Arsi & Bale Wheat Belts",
+    "subtitle": "Serving Asella, Robe, Dodola, and Shashemene Farming Unions",
+    "heroImage": "https://images.unsplash.com/photo-1592878904946-b3cd8ae243d0?auto=format&fit=crop&w=1200&q=80",
+    "description": "Oromia's southeastern highlands are Ethiopia's premier cereal grain centers. Heavy clay vertisols require dependable 4WD traction, disc ploughs, and seasonal harvest balers.",
+    "farmingContext": "Large-scale commercial wheat, barley, canola, and teff production requiring multi-unit tractor fleets and rapid on-farm technician deployment.",
+    "recommendedHorsepower": "85 HP to 120 HP 4WD",
+    "popularTractors": [
+      "Massey Ferguson MF 385 4WD",
+      "Lovol TD904 A/C",
+      "Massey Ferguson MF 375"
+    ],
+    "hubOffice": "Service coverage from Asella & Robe regional liaison",
+    "phone": "+251 91 123 4567",
+    "active": true,
+    "order": 6,
+    "createdAt": "2026-10-06T09:20:04.657Z"
+  },
+  {
+    "id": "loc-sidama",
+    "name": "Hawassa & Sidama",
+    "region": "Sidama",
+    "slug": "tractors-sidama",
+    "title": "Tractors & Farm Machinery in Sidama & Hawassa",
+    "subtitle": "Equipment for Coffee, Maize, Vegetable, and Enset Belts",
+    "heroImage": "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=1200&q=80",
+    "description": "Sidama's fertile volcanic soil and productive cooperatives rely on maneuverable 75 HP utility tractors for inter-row tilling, market transport, and union processing facilities.",
+    "farmingContext": "Coffee agroforestry, maize cultivation, horticulture near Lake Hawassa, and produce haulage trailers.",
+    "recommendedHorsepower": "75 HP Utility 4WD",
+    "popularTractors": [
+      "Lovol TB754 4WD",
+      "Massey Ferguson MF 375",
+      "New Holland TT75"
+    ],
+    "hubOffice": "Hawassa City Center Commercial Zone",
+    "phone": "+251 91 123 4567",
+    "active": true,
+    "order": 7,
+    "createdAt": "2026-10-09T09:20:04.657Z"
+  },
+  {
+    "id": "loc-somali-region",
+    "name": "Somali & Dire Dawa",
+    "region": "Somali Region",
+    "slug": "tractors-somali-region",
+    "title": "Tractors for Eastern Ethiopia & Wabe Shebelle Irrigation",
+    "subtitle": "High-Capacity Radiators & Dust-Proof Machinery for Hot Climate Cultivation",
+    "heroImage": "https://images.unsplash.com/photo-1516253593875-bd7ba052fbc5?auto=format&fit=crop&w=1200&q=80",
+    "description": "Agricultural development along eastern river basins requires tractors engineered for high ambient temperatures, reinforced air intake filters, and air-conditioned operator cabins.",
+    "farmingContext": "Commercial river basin irrigation, sesame, wheat, onion, and forage farming under intense sunlight.",
+    "recommendedHorsepower": "85 HP to 110 HP A/C Cabin",
+    "popularTractors": [
+      "Lovol TD904 A/C Cabin",
+      "Massey Ferguson MF 385 4WD"
+    ],
+    "hubOffice": "Dire Dawa & Jigjiga Regional Coordination",
+    "phone": "+251 91 123 4567",
+    "active": true,
+    "order": 8,
+    "createdAt": "2026-10-14T09:20:04.657Z"
+  },
+  {
+    "id": "loc-all-ethiopia",
+    "name": "Nationwide Deliveries",
+    "region": "All-Ethiopia",
+    "slug": "agricultural-equipment-ethiopia",
+    "title": "Ethiopia-Wide Machinery Delivery & Duty-Free Clearance",
+    "subtitle": "Serving Commercial Farms, Unions & Investors in All 12 Regions",
+    "heroImage": "https://images.unsplash.com/photo-1530267981375-f0de937f5f13?auto=format&fit=crop&w=1200&q=80",
+    "description": "Nationwide dispatch covering Afar, Benishangul-Gumuz, Gambella, South West, and Central Ethiopia with duty-free agricultural documentation advisory.",
+    "farmingContext": "Primary tillage, secondary tillage, disc harrows, precision planting, spraying, and grain harvesting.",
+    "recommendedHorsepower": "Complete 50 HP to 130 HP Range",
+    "popularTractors": [
+      "Massey Ferguson MF 385 4WD",
+      "Lovol TB754",
+      "John Deere 5075E"
+    ],
+    "hubOffice": "Addis Ababa Central Depot with On-Farm Flatbed Transport",
+    "phone": "+251 91 123 4567",
+    "active": true,
+    "order": 9,
+    "createdAt": "2026-09-29T09:20:04.657Z"
+  }
+]
