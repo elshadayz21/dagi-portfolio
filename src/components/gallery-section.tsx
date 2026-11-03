@@ -85,10 +85,6 @@ export function GallerySection({
       {/* Section Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div className="space-y-2">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-bold uppercase tracking-wider">
-            <Sparkles className="w-3 h-3 text-emerald-600" />
-            <span>On-Site Farmland Demonstrations</span>
-          </div>
           <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
             Tractors & Farmers in Action Across Ethiopia
           </h2>
@@ -202,20 +198,6 @@ export function GallerySection({
 
                   {/* Gradient Vignette */}
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
-
-                  {/* Media Type Pill */}
-                  <div className="absolute top-3 left-3">
-                    <span
-                      className={`text-[10px] font-black px-2.5 py-1 rounded-full flex items-center gap-1 shadow-sm ${
-                        isVideo
-                          ? "bg-sky-500 text-white"
-                          : "bg-emerald-600 text-white"
-                      }`}
-                    >
-                      {isVideo ? <Film className="w-3 h-3" /> : <ImageIcon className="w-3 h-3" />}
-                      <span>{isVideo ? "VIDEO DEMO" : "FIELD PHOTO"}</span>
-                    </span>
-                  </div>
 
                   {/* Play Button Overlay for Video */}
                   {isVideo && (
