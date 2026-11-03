@@ -16,6 +16,7 @@ import {
   Sparkles,
   ArrowRight,
   ChevronRight,
+  ArrowUpDown,
 } from "lucide-react";
 
 interface GallerySectionProps {
@@ -45,15 +46,37 @@ export function GallerySection({
   showAllLink = true,
 }: GallerySectionProps) {
   const [activeCategory, setActiveCategory] = useState("ALL");
+  const [sortBy, setSortBy] = useState<
+    "date-desc" | "date-asc" | "title-asc" | "location-asc" | "tractor-asc"
+  >("date-desc");
   const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
 
   const filteredItems = useMemo(() => {
-    return items.filter((item) => {
+    const list = items.filter((item) => {
       if (activeCategory === "ALL") return true;
       if (activeCategory === "VIDEO") return item.type === "VIDEO";
       return item.category === activeCategory;
     });
-  }, [items, activeCategory]);
+
+    list.sort((a, b) => {
+      switch (sortBy) {
+        case "date-desc":
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        case "date-asc":
+          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        case "title-asc":
+          return a.title.localeCompare(b.title);
+        case "location-asc":
+          return a.location.localeCompare(b.location);
+        case "tractor-asc":
+          return (a.tractorModel || "").localeCompare(b.tractorModel || "");
+        default:
+          return 0;
+      }
+    });
+
+    return list;
+  }, [items, activeCategory, sortBy]);
 
   const displayedItems = maxItems ? filteredItems.slice(0, maxItems) : filteredItems;
 
@@ -85,39 +108,59 @@ export function GallerySection({
         )}
       </div>
 
-      {/* Filter Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
-        {["ALL", "FIELD_WORK", "DELIVERY", "TRAINING", "HARVEST", "VIDEO"].map((cat) => {
-          const isActive = activeCategory === cat;
-          const count =
-            cat === "ALL"
-              ? items.length
-              : cat === "VIDEO"
-              ? items.filter((i) => i.type === "VIDEO").length
-              : items.filter((i) => i.category === cat).length;
+      {/* Filter Tabs & Sorting Toolbar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        {/* Filter Tabs */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
+          {["ALL", "FIELD_WORK", "DELIVERY", "TRAINING", "HARVEST", "VIDEO"].map((cat) => {
+            const isActive = activeCategory === cat;
+            const count =
+              cat === "ALL"
+                ? items.length
+                : cat === "VIDEO"
+                ? items.filter((i) => i.type === "VIDEO").length
+                : items.filter((i) => i.category === cat).length;
 
-          return (
-            <button
-              key={cat}
-              type="button"
-              onClick={() => setActiveCategory(cat)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${
-                isActive
-                  ? "bg-tekhaf-800 text-white shadow-sm"
-                  : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
-              }`}
-            >
-              <span>{CATEGORY_NAMES[cat] || cat}</span>
-              <span
-                className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
-                  isActive ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500"
+            return (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => setActiveCategory(cat)}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${
+                  isActive
+                    ? "bg-tekhaf-800 text-white shadow-sm"
+                    : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
                 }`}
               >
-                {count}
-              </span>
-            </button>
-          );
-        })}
+                <span>{CATEGORY_NAMES[cat] || cat}</span>
+                <span
+                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                    isActive ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500"
+                  }`}
+                >
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Sort By Dropdown */}
+        <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+          <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
+          <span className="text-xs font-semibold text-slate-600">Sort:</span>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as any)}
+            className="text-xs font-semibold py-1.5 px-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 focus:outline-none focus:ring-2 focus:ring-tekhaf-600 shadow-xs"
+          >
+            <option value="date-desc">Latest Demonstrations</option>
+            <option value="date-asc">Oldest Demonstrations</option>
+            <option value="title-asc">Title (A to Z)</option>
+            <option value="location-asc">Location / Region</option>
+            <option value="tractor-asc">Tractor Model</option>
+          </select>
+        </div>
       </div>
 
       {/* Media Grid */}

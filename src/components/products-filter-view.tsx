@@ -7,7 +7,7 @@ import { Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { TractorProduct } from "@/lib/data/inventory";
 import { InquiryModal } from "./inquiry-modal";
-import { Search, RotateCcw, ArrowRight, Tractor } from "lucide-react";
+import { Search, RotateCcw, ArrowRight, Tractor, ArrowUpDown } from "lucide-react";
 import { Pagination } from "./pagination";
 
 interface ProductsFilterViewProps {
@@ -26,6 +26,9 @@ export function ProductsFilterView({
   const [selectedBrand, setSelectedBrand] = useState("ALL");
   const [selectedHP, setSelectedHP] = useState("ALL");
   const [selectedAvailability, setSelectedAvailability] = useState("ALL");
+  const [sortBy, setSortBy] = useState<
+    "date-desc" | "name-asc" | "name-desc" | "hp-desc" | "hp-asc" | "category-asc"
+  >("date-desc");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(6);
 
@@ -42,7 +45,7 @@ export function ProductsFilterView({
   }, [initialProducts]);
 
   const filteredProducts = useMemo(() => {
-    return initialProducts.filter((product) => {
+    const list = initialProducts.filter((product) => {
       const query = searchQuery.toLowerCase();
       const matchesSearch =
         !query ||
@@ -69,7 +72,28 @@ export function ProductsFilterView({
 
       return matchesSearch && matchesCategory && matchesBrand && matchesHP && matchesAvailability;
     });
-  }, [initialProducts, searchQuery, selectedCategory, selectedBrand, selectedHP, selectedAvailability]);
+
+    list.sort((a, b) => {
+      switch (sortBy) {
+        case "date-desc":
+          return (b.id || "").localeCompare(a.id || "");
+        case "name-asc":
+          return a.title.localeCompare(b.title);
+        case "name-desc":
+          return b.title.localeCompare(a.title);
+        case "hp-desc":
+          return b.horsepower - a.horsepower;
+        case "hp-asc":
+          return a.horsepower - b.horsepower;
+        case "category-asc":
+          return (a.category || "").localeCompare(b.category || "");
+        default:
+          return 0;
+      }
+    });
+
+    return list;
+  }, [initialProducts, searchQuery, selectedCategory, selectedBrand, selectedHP, selectedAvailability, sortBy]);
 
   const totalPages = Math.ceil(filteredProducts.length / pageSize) || 1;
 
@@ -84,6 +108,7 @@ export function ProductsFilterView({
     setSelectedBrand("ALL");
     setSelectedHP("ALL");
     setSelectedAvailability("ALL");
+    setSortBy("date-desc");
     setCurrentPage(1);
   };
 
@@ -105,7 +130,7 @@ export function ProductsFilterView({
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
           <div>
             <label className="block text-xs font-semibold text-slate-600 mb-1">
               Category
@@ -182,6 +207,28 @@ export function ProductsFilterView({
               <option value="ALL">{dict.productsPage.allAvailability}</option>
               <option value="IN_STOCK">In Stock</option>
               <option value="PRE_ORDER">Available on Pre-Order</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-600 mb-1 flex items-center gap-1">
+              <ArrowUpDown className="w-3 h-3 text-slate-400" />
+              <span>Sort By</span>
+            </label>
+            <select
+              value={sortBy}
+              onChange={(e) => {
+                setSortBy(e.target.value as any);
+                setCurrentPage(1);
+              }}
+              className="w-full text-xs font-semibold px-3 py-2 rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-tekhaf-600"
+            >
+              <option value="date-desc">Latest Added</option>
+              <option value="name-asc">Name (A to Z)</option>
+              <option value="name-desc">Name (Z to A)</option>
+              <option value="hp-desc">Horsepower (High to Low)</option>
+              <option value="hp-asc">Horsepower (Low to High)</option>
+              <option value="category-asc">Category / Type (A to Z)</option>
             </select>
           </div>
 

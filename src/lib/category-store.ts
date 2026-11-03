@@ -177,6 +177,10 @@ export function slugifyCategory(text: string): string {
 export async function getCategories(
   typeFilter?: "PRODUCT" | "MEDIA" | "BOTH" | "ALL"
 ): Promise<CategoryItem[]> {
+  const persisted = loadPersistedCategories();
+  if (persisted && persisted.length > 0) {
+    globalForCategories.inMemoryCategories = persisted;
+  }
   const list = globalForCategories.inMemoryCategories;
 
   if (!typeFilter || typeFilter === "ALL") {

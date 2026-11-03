@@ -41,7 +41,7 @@ export default function AdminCategoriesPage() {
   const [editingCategory, setEditingCategory] = useState<EnrichedCategory | null>(null);
   const [formName, setFormName] = useState("");
   const [formSlug, setFormSlug] = useState("");
-  const [formType, setFormType] = useState<"PRODUCT" | "MEDIA" | "BOTH">("PRODUCT");
+  const [formType, setFormType] = useState<"PRODUCT" | "MEDIA" | "BOTH">("BOTH");
   const [formDesc, setFormDesc] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -78,7 +78,7 @@ export default function AdminCategoriesPage() {
     setEditingCategory(null);
     setFormName("");
     setFormSlug("");
-    setFormType("PRODUCT");
+    setFormType("BOTH");
     setFormDesc("");
     setModalOpen(true);
   };
