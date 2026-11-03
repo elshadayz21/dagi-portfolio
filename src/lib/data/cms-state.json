@@ -1,0 +1,102 @@
+{
+  "representativeName": "Dagim Melese",
+  "jobTitle": "Agricultural Machinery Specialist",
+  "companyName": "Tekhaf Trading",
+  "companySlogan": "Authorized Agricultural Machinery & Heavy Tractor Solutions",
+  "profilePhoto": "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=800&q=80",
+  "customLogoUrl": null,
+  "experienceYears": 12,
+  "biography": "Dagim Melese is an agricultural machinery sales consultant at Tekhaf Trading in Addis Ababa, Ethiopia. With over 12 years of industry experience, Dagim specializes in matching farmers, unions, and commercial enterprises with heavy-duty tractors, genuine implements, and dependable field support across all Ethiopian regions.",
+  "workingHours": "Monday – Saturday: 8:30 AM – 6:00 PM (EAT)",
+  "phones": [
+    {
+      "id": "phone-1",
+      "label": "Direct Sales Consultant (Dagim)",
+      "phone": "+251911234567",
+      "display": "+251 91 123 4567",
+      "isPrimary": true
+    },
+    {
+      "id": "phone-2",
+      "label": "Tekhaf Showroom Desk",
+      "phone": "+251922334455",
+      "display": "+251 92 233 4455",
+      "isPrimary": false
+    },
+    {
+      "id": "phone-3",
+      "label": "Spare Parts & Field Tech Support",
+      "phone": "+251116678900",
+      "display": "+251 11 667 8900",
+      "isPrimary": false
+    }
+  ],
+  "locations": [
+    {
+      "id": "loc-1",
+      "title": "Headquarters & Machinery Showroom",
+      "address": "Tekhaf Tower, 4th Floor, Bole Medhanialem",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "operatingHours": "Monday – Saturday: 8:30 AM – 6:00 PM",
+      "mapUrl": "https://maps.google.com/?q=Bole+Medhanialem+Addis+Ababa",
+      "isHeadquarters": true
+    },
+    {
+      "id": "loc-2",
+      "title": "Kaliti Heavy Machinery Yard & Pre-Delivery Inspection Depot",
+      "address": "Kaliti Industrial Zone, Near Ring Road Junction",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "operatingHours": "Monday – Friday: 8:00 AM – 5:30 PM",
+      "mapUrl": "https://maps.google.com/?q=Kaliti+Industrial+Addis+Ababa",
+      "isHeadquarters": false
+    },
+    {
+      "id": "loc-3",
+      "title": "Hawassa Regional Cooperative Liaison & Service Center",
+      "address": "Menaheria Commercial District, Hawassa",
+      "city": "Sidama",
+      "country": "Ethiopia",
+      "operatingHours": "Monday – Saturday: 8:30 AM – 5:00 PM",
+      "mapUrl": "https://maps.google.com/?q=Hawassa+Sidama+Ethiopia",
+      "isHeadquarters": false
+    }
+  ],
+  "emails": [
+    {
+      "id": "email-1",
+      "label": "Direct Sales & Quotations",
+      "email": "dagim@tekhaf.com",
+      "isPrimary": true
+    },
+    {
+      "id": "email-2",
+      "label": "Spare Parts & Logistics Department",
+      "email": "sales@tekhaf.com",
+      "isPrimary": false
+    }
+  ],
+  "socials": {
+    "whatsapp": "https://wa.me/251911234567",
+    "telegram": "https://t.me/tekhaftractors",
+    "linkedin": "https://linkedin.com/in/dagim-melese",
+    "facebook": "https://facebook.com/tekhaftrading",
+    "youtube": "https://youtube.com/@tekhaftractors",
+    "tiktok": "https://tiktok.com/@tekhaftractors",
+    "phone": "tel:+251911234567",
+    "email": "mailto:dagim@tekhaf.com"
+  },
+  "enabledLocales": [
+    "en",
+    "am",
+    "or",
+    "so",
+    "sid"
+  ],
+  "defaultLocale": "en",
+  "phone": "+251911234567",
+  "phoneDisplay": "+251 91 123 4567",
+  "email": "dagim@tekhaf.com",
+  "officeAddress": "Tekhaf Tower, 4th Floor, Bole Medhanialem, Addis Ababa, Ethiopia"
+}

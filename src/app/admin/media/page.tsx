@@ -30,6 +30,8 @@ export default function AdminMediaPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(8);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [activeLogoUrl, setActiveLogoUrl] = useState<string | null>(null);
+  const [settingLogoUrl, setSettingLogoUrl] = useState<string | null>(null);
 
   // Upload Modal State
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
@@ -55,7 +57,20 @@ export default function AdminMediaPage() {
 
   useEffect(() => {
     fetchMedia();
+    fetchActiveLogo();
   }, []);
+
+  const fetchActiveLogo = async () => {
+    try {
+      const res = await fetch("/api/cms");
+      const data = await res.json();
+      if (data.success && data.data) {
+        setActiveLogoUrl(data.data.customLogoUrl || null);
+      }
+    } catch (err) {
+      console.error("Failed to fetch active logo", err);
+    }
+  };
 
   const fetchMedia = async () => {
     try {
@@ -87,16 +102,30 @@ export default function AdminMediaPage() {
   // Quick set as Site Logo & Favicon
   const setAsSiteLogo = async (url: string) => {
     try {
+      setSettingLogoUrl(url);
+      const isCurrentlyActive = activeLogoUrl === url;
+      const targetUrl = isCurrentlyActive ? null : url;
+
       const res = await fetch("/api/cms", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ customLogoUrl: url }),
+        body: JSON.stringify({ customLogoUrl: targetUrl }),
       });
-      if (res.ok) {
-        showToast("Asset set as active site logo & favicon!");
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setActiveLogoUrl(targetUrl);
+        showToast(
+          targetUrl
+            ? "Asset set as active site logo & favicon!"
+            : "Site logo reset to official tractor emblem!"
+        );
+      } else {
+        alert(data.error || "Failed to update logo");
       }
     } catch {
-      alert("Failed to update logo");
+      alert("Failed to update logo. Please check connection.");
+    } finally {
+      setSettingLogoUrl(null);
     }
   };
 
@@ -333,6 +362,45 @@ export default function AdminMediaPage() {
         </div>
       </div>
 
+      {/* Active Brand Logo Indicator Banner */}
+      {activeLogoUrl && (
+        <div className="bg-gradient-to-r from-tekhaf-50/90 to-blue-50/70 p-4 rounded-2xl border border-tekhaf-200/90 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 p-1 flex items-center justify-center shrink-0 shadow-sm overflow-hidden">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={activeLogoUrl}
+                alt="Active Site Logo"
+                className="w-full h-full object-contain"
+              />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-slate-900">
+                  Custom Brand Logo & Favicon Active
+                </span>
+                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3" />
+                  Live on Public Site
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                This image is dynamically active across the header navbar, footer, and browser tab favicon.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setAsSiteLogo(activeLogoUrl)}
+            disabled={settingLogoUrl !== null}
+            className="text-xs font-bold text-slate-600 hover:text-rose-600 bg-white hover:bg-rose-50 border border-slate-200 hover:border-rose-200 px-3 py-1.5 rounded-xl transition-all shadow-sm flex items-center gap-1.5 self-start sm:self-auto disabled:opacity-50"
+            title="Reset site logo to official tractor emblem"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${settingLogoUrl === activeLogoUrl ? "animate-spin" : ""}`} />
+            <span>Reset to Default Logo</span>
+          </button>
+        </div>
+      )}
+
       {/* Search and Category Filters */}
       <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-3 items-center justify-between">
         <div className="relative w-full md:w-80">
@@ -465,11 +533,34 @@ export default function AdminMediaPage() {
 
                     <button
                       onClick={() => setAsSiteLogo(item.url)}
-                      className="py-1.5 px-2.5 bg-tekhaf-50 hover:bg-tekhaf-100 text-tekhaf-700 rounded-lg text-[11px] font-semibold border border-tekhaf-200 transition-colors flex items-center gap-1"
-                      title="Use this image as active site logo & favicon"
+                      disabled={settingLogoUrl === item.url}
+                      className={`py-1.5 px-2.5 rounded-lg text-[11px] font-semibold border transition-all flex items-center gap-1.5 ${
+                        activeLogoUrl === item.url
+                          ? "bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-700 shadow-sm"
+                          : "bg-tekhaf-50 hover:bg-tekhaf-100 text-tekhaf-700 border-tekhaf-200"
+                      } disabled:opacity-60`}
+                      title={
+                        activeLogoUrl === item.url
+                          ? "Currently active site logo & favicon (click to reset to default emblem)"
+                          : "Use this image as active site logo & favicon"
+                      }
                     >
-                      <Sparkles className="w-3 h-3" />
-                      <span>Set as Logo</span>
+                      {settingLogoUrl === item.url ? (
+                        <>
+                          <RefreshCw className="w-3 h-3 animate-spin" />
+                          <span>Saving...</span>
+                        </>
+                      ) : activeLogoUrl === item.url ? (
+                        <>
+                          <CheckCircle2 className="w-3 h-3 text-white" />
+                          <span>Active Logo</span>
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-3 h-3 text-tekhaf-600" />
+                          <span>Set as Logo</span>
+                        </>
+                      )}
                     </button>
                   </div>
                 </div>

@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import { getCMSData } from "@/lib/cms-store";
 import "./globals.css";
 
+export const dynamic = "force-dynamic";
+
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
@@ -10,7 +12,7 @@ const inter = Inter({
 
 export async function generateMetadata(): Promise<Metadata> {
   const cms = await getCMSData();
-  const iconUrl = cms.customLogoUrl || "/api/favicon";
+  const iconUrl = "/api/favicon";
 
   return {
     title: `${cms.representativeName} • ${cms.jobTitle} | ${cms.companyName}`,
@@ -19,7 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
       icon: [
         {
           url: iconUrl,
-          type: cms.customLogoUrl ? "image/png" : "image/svg+xml",
+          type: "image/png",
         },
       ],
       shortcut: [iconUrl],

@@ -9,6 +9,8 @@ import {
   getFAQSchema,
 } from "@/lib/seo/schema";
 
+export const dynamic = "force-dynamic";
+
 export async function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
@@ -30,7 +32,7 @@ export async function generateMetadata({
   const title = `${cms.representativeName} • ${cms.jobTitle} | ${cms.companyName}`;
   const description = `${cms.representativeName}, ${cms.jobTitle} at ${cms.companyName} in Ethiopia. Commercial agricultural tractors, implements, and direct on-farm support.`;
 
-  const iconUrl = cms.customLogoUrl || "/api/favicon";
+  const iconUrl = "/api/favicon";
 
   return {
     title: {
@@ -46,11 +48,11 @@ export async function generateMetadata({
       icon: [
         {
           url: iconUrl,
-          type: cms.customLogoUrl ? "image/png" : "image/svg+xml",
+          type: "image/png",
         },
       ],
       shortcut: [iconUrl],
-      apple: [cms.customLogoUrl || "/apple-icon"],
+      apple: [iconUrl],
     },
     alternates: {
       canonical: `https://tekhaftractors.com/${currentLocale}`,

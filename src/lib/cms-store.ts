@@ -1,5 +1,7 @@
 import { tractorInventory, TractorProduct } from "./data/inventory";
 import { prisma } from "./prisma";
+import fs from "fs";
+import path from "path";
 
 export interface ContactPhone {
   id: string;
@@ -72,7 +74,7 @@ export interface SiteCMSData {
   officeAddress: string;
 }
 
-let inMemoryCMS: SiteCMSData = {
+const defaultInitialCMS: SiteCMSData = {
   representativeName: "Dagim Melese",
   jobTitle: "Agricultural Machinery Specialist",
   companyName: "Tekhaf Trading",
@@ -181,7 +183,48 @@ let inMemoryCMS: SiteCMSData = {
   officeAddress: "Tekhaf Tower, 4th Floor, Bole Medhanialem, Addis Ababa, Ethiopia",
 };
 
-let inMemoryInventory: TractorProduct[] = [...tractorInventory];
+const CMS_FILE_PATH = path.join(process.cwd(), "src", "lib", "data", "cms-state.json");
+
+function loadPersistedCMS(): Partial<SiteCMSData> {
+  try {
+    if (fs.existsSync(CMS_FILE_PATH)) {
+      const raw = fs.readFileSync(CMS_FILE_PATH, "utf-8");
+      return JSON.parse(raw);
+    }
+  } catch (err) {
+    // fallback
+  }
+  return {};
+}
+
+function savePersistedCMS(data: SiteCMSData) {
+  try {
+    const dir = path.dirname(CMS_FILE_PATH);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    fs.writeFileSync(CMS_FILE_PATH, JSON.stringify(data, null, 2), "utf-8");
+  } catch (err) {
+    console.error("Failed to save CMS to disk:", err);
+  }
+}
+
+const globalForCMS = globalThis as unknown as {
+  inMemoryCMS: SiteCMSData;
+  inMemoryInventory: TractorProduct[];
+};
+
+if (!globalForCMS.inMemoryCMS) {
+  const persisted = loadPersistedCMS();
+  globalForCMS.inMemoryCMS = {
+    ...defaultInitialCMS,
+    ...persisted,
+  };
+}
+
+if (!globalForCMS.inMemoryInventory) {
+  globalForCMS.inMemoryInventory = [...tractorInventory];
+}
 
 let dbAvailable: boolean | null = null;
 let lastDbCheck = 0;
@@ -203,27 +246,29 @@ async function canQueryDb(): Promise<boolean> {
 }
 
 export async function getCMSData(): Promise<SiteCMSData> {
+  const current = globalForCMS.inMemoryCMS;
+
   try {
     if (await canQueryDb()) {
       const setting = await prisma.siteSetting.findFirst();
       const profile = await prisma.profile.findFirst();
 
       if (profile || setting) {
-        const primaryPhone = inMemoryCMS.phones.find((p) => p.isPrimary) || inMemoryCMS.phones[0];
-        const primaryLoc = inMemoryCMS.locations.find((l) => l.isHeadquarters) || inMemoryCMS.locations[0];
-        const primaryEmail = inMemoryCMS.emails.find((e) => e.isPrimary) || inMemoryCMS.emails[0];
+        const primaryPhone = current.phones.find((p) => p.isPrimary) || current.phones[0];
+        const primaryLoc = current.locations.find((l) => l.isHeadquarters) || current.locations[0];
+        const primaryEmail = current.emails.find((e) => e.isPrimary) || current.emails[0];
 
         return {
-          ...inMemoryCMS,
-          representativeName: profile?.fullName || inMemoryCMS.representativeName,
-          jobTitle: profile?.jobTitle || inMemoryCMS.jobTitle,
-          companyName: profile?.companyName || setting?.companyName || inMemoryCMS.companyName,
-          phone: profile?.phone || primaryPhone?.phone || inMemoryCMS.phone,
-          phoneDisplay: primaryPhone?.display || inMemoryCMS.phoneDisplay,
-          email: profile?.email || primaryEmail?.email || inMemoryCMS.email,
-          officeAddress: profile?.address || `${primaryLoc?.address}, ${primaryLoc?.city}, ${primaryLoc?.country}` || inMemoryCMS.officeAddress,
-          profilePhoto: profile?.profilePhoto || inMemoryCMS.profilePhoto,
-          biography: profile?.biography || inMemoryCMS.biography,
+          ...current,
+          representativeName: profile?.fullName || current.representativeName,
+          jobTitle: profile?.jobTitle || current.jobTitle,
+          companyName: profile?.companyName || setting?.companyName || current.companyName,
+          phone: profile?.phone || primaryPhone?.phone || current.phone,
+          phoneDisplay: primaryPhone?.display || current.phoneDisplay,
+          email: profile?.email || primaryEmail?.email || current.email,
+          officeAddress: profile?.address || `${primaryLoc?.address}, ${primaryLoc?.city}, ${primaryLoc?.country}` || current.officeAddress,
+          profilePhoto: profile?.profilePhoto || current.profilePhoto,
+          biography: profile?.biography || current.biography,
         };
       }
     }
@@ -232,49 +277,52 @@ export async function getCMSData(): Promise<SiteCMSData> {
   }
 
   // Ensure primary values stay synchronized
-  const primaryPhone = inMemoryCMS.phones.find((p) => p.isPrimary) || inMemoryCMS.phones[0];
-  const primaryLoc = inMemoryCMS.locations.find((l) => l.isHeadquarters) || inMemoryCMS.locations[0];
-  const primaryEmail = inMemoryCMS.emails.find((e) => e.isPrimary) || inMemoryCMS.emails[0];
+  const primaryPhone = current.phones.find((p) => p.isPrimary) || current.phones[0];
+  const primaryLoc = current.locations.find((l) => l.isHeadquarters) || current.locations[0];
+  const primaryEmail = current.emails.find((e) => e.isPrimary) || current.emails[0];
 
   return {
-    ...inMemoryCMS,
-    phone: primaryPhone ? primaryPhone.phone : inMemoryCMS.phone,
-    phoneDisplay: primaryPhone ? primaryPhone.display : inMemoryCMS.phoneDisplay,
-    email: primaryEmail ? primaryEmail.email : inMemoryCMS.email,
+    ...current,
+    phone: primaryPhone ? primaryPhone.phone : current.phone,
+    phoneDisplay: primaryPhone ? primaryPhone.display : current.phoneDisplay,
+    email: primaryEmail ? primaryEmail.email : current.email,
     officeAddress: primaryLoc
       ? `${primaryLoc.address}, ${primaryLoc.city}, ${primaryLoc.country}`
-      : inMemoryCMS.officeAddress,
+      : current.officeAddress,
   };
 }
 
 export async function updateCMSData(updates: Partial<SiteCMSData>): Promise<SiteCMSData> {
-  const mergedPhones = updates.phones ?? inMemoryCMS.phones;
-  const mergedLocations = updates.locations ?? inMemoryCMS.locations;
-  const mergedEmails = updates.emails ?? inMemoryCMS.emails;
+  const current = globalForCMS.inMemoryCMS;
+  const mergedPhones = updates.phones ?? current.phones;
+  const mergedLocations = updates.locations ?? current.locations;
+  const mergedEmails = updates.emails ?? current.emails;
 
   const primaryPhone = mergedPhones.find((p) => p.isPrimary) || mergedPhones[0];
   const primaryLoc = mergedLocations.find((l) => l.isHeadquarters) || mergedLocations[0];
   const primaryEmail = mergedEmails.find((e) => e.isPrimary) || mergedEmails[0];
 
-  inMemoryCMS = {
-    ...inMemoryCMS,
+  globalForCMS.inMemoryCMS = {
+    ...current,
     ...updates,
     phones: mergedPhones,
     locations: mergedLocations,
     emails: mergedEmails,
     socials: {
-      ...inMemoryCMS.socials,
+      ...current.socials,
       ...(updates.socials || {}),
     },
-    phone: primaryPhone ? primaryPhone.phone : updates.phone || inMemoryCMS.phone,
-    phoneDisplay: primaryPhone ? primaryPhone.display : updates.phoneDisplay || inMemoryCMS.phoneDisplay,
-    email: primaryEmail ? primaryEmail.email : updates.email || inMemoryCMS.email,
+    phone: primaryPhone ? primaryPhone.phone : updates.phone || current.phone,
+    phoneDisplay: primaryPhone ? primaryPhone.display : updates.phoneDisplay || current.phoneDisplay,
+    email: primaryEmail ? primaryEmail.email : updates.email || current.email,
     officeAddress: primaryLoc
       ? `${primaryLoc.address}, ${primaryLoc.city}, ${primaryLoc.country}`
-      : updates.officeAddress || inMemoryCMS.officeAddress,
+      : updates.officeAddress || current.officeAddress,
   };
 
-  return inMemoryCMS;
+  savePersistedCMS(globalForCMS.inMemoryCMS);
+
+  return globalForCMS.inMemoryCMS;
 }
 
 export async function getLiveTractors(): Promise<TractorProduct[]> {
@@ -317,32 +365,34 @@ export async function getLiveTractors(): Promise<TractorProduct[]> {
     dbAvailable = false;
   }
 
-  return inMemoryInventory;
+  return globalForCMS.inMemoryInventory;
 }
 
 export async function addOrUpdateTractor(product: TractorProduct) {
-  const existingIdx = inMemoryInventory.findIndex((p) => p.id === product.id || p.slug === product.slug);
+  const inventory = globalForCMS.inMemoryInventory;
+  const existingIdx = inventory.findIndex((p) => p.id === product.id || p.slug === product.slug);
   if (existingIdx >= 0) {
-    inMemoryInventory[existingIdx] = product;
+    inventory[existingIdx] = product;
   } else {
-    inMemoryInventory = [product, ...inMemoryInventory];
+    globalForCMS.inMemoryInventory = [product, ...inventory];
   }
-  return inMemoryInventory;
+  return globalForCMS.inMemoryInventory;
 }
 
 export async function patchTractor(id: string, updates: Partial<TractorProduct>) {
-  const existingIdx = inMemoryInventory.findIndex((p) => p.id === id);
+  const inventory = globalForCMS.inMemoryInventory;
+  const existingIdx = inventory.findIndex((p) => p.id === id);
   if (existingIdx >= 0) {
-    inMemoryInventory[existingIdx] = {
-      ...inMemoryInventory[existingIdx],
+    inventory[existingIdx] = {
+      ...inventory[existingIdx],
       ...updates,
     };
-    return inMemoryInventory[existingIdx];
+    return inventory[existingIdx];
   }
   return null;
 }
 
 export async function deleteTractor(id: string) {
-  inMemoryInventory = inMemoryInventory.filter((p) => p.id !== id);
-  return inMemoryInventory;
+  globalForCMS.inMemoryInventory = globalForCMS.inMemoryInventory.filter((p) => p.id !== id);
+  return globalForCMS.inMemoryInventory;
 }

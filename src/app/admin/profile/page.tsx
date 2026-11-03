@@ -26,6 +26,7 @@ import {
   SocialLinks,
   SiteCMSData,
 } from "@/lib/cms-store";
+import { Logo } from "@/components/logo";
 
 export default function AdminProfilePage() {
   const [profile, setProfile] = useState<{
@@ -916,37 +917,12 @@ export default function AdminProfilePage() {
                   Header Logo Preview
                 </span>
                 <div className="h-12 flex items-center">
-                  {profile.customLogoUrl ? (
-                    <div className="relative h-10 w-40">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={profile.customLogoUrl}
-                        alt="Custom Logo"
-                        className="h-full object-contain"
-                        onError={(e) => {
-                          (e.target as HTMLElement).style.display = "none";
-                        }}
-                      />
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-9 h-9 rounded-xl bg-tekhaf-700 flex items-center justify-center text-white shrink-0">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-5 h-5">
-                          <path d="M3 17h18" />
-                          <path d="M7 17v-4h6l2 4" />
-                          <path d="M13 13V8h-4l-2 5" />
-                          <path d="M10 8V5h2" />
-                          <circle cx="6" cy="17" r="3" />
-                          <circle cx="17.5" cy="17" r="2" />
-                          <path d="M12 5V3" />
-                        </svg>
-                      </div>
-                      <div className="flex flex-col leading-none">
-                        <span className="text-xs font-black uppercase text-slate-900">{profile.representativeName}</span>
-                        <span className="text-[10px] text-slate-500 mt-0.5">{profile.jobTitle} • <strong className="text-tekhaf-700">{profile.companyName}</strong></span>
-                      </div>
-                    </div>
-                  )}
+                  <Logo
+                    representativeName={profile.representativeName}
+                    jobTitle={profile.jobTitle}
+                    companyName={profile.companyName}
+                    customLogoUrl={profile.customLogoUrl || null}
+                  />
                 </div>
               </div>
 
