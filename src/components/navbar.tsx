@@ -38,18 +38,31 @@ export function Navbar({
   enabledLocales,
 }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [langDropdownOpen, setLangDropdownOpen] = useState(false);
+  const [langPickerOpen, setLangPickerOpen] = useState(false);
   const [langSearch, setLangSearch] = useState("");
   const pathname = usePathname();
   const router = useRouter();
   const dict = getDictionary(currentLocale);
 
+  // Close menus on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setLangPickerOpen(false);
+        setMobileMenuOpen(false);
+      }
+    };
+    if (langPickerOpen || mobileMenuOpen) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [langPickerOpen, mobileMenuOpen]);
+
   // Dynamic active locales from CMS
-  const activeLocales = (
+  const activeLocales =
     enabledLocales && enabledLocales.length > 0
       ? locales.filter((loc) => enabledLocales.includes(loc))
-      : locales
-  );
+      : locales;
 
   const filteredLocales = activeLocales.filter((loc) => {
     if (!langSearch.trim()) return true;
@@ -73,7 +86,9 @@ export function Navbar({
   });
 
   const switchLocale = (newLocale: Locale) => {
-    setLangDropdownOpen(false);
+    setLangPickerOpen(false);
+    setMobileMenuOpen(false);
+    setLangSearch("");
     const segments = pathname.split("/");
     if (locales.includes(segments[1] as Locale)) {
       segments[1] = newLocale;
@@ -126,41 +141,31 @@ export function Navbar({
             })}
           </nav>
 
-          {/* Actions: Dynamic Language Selector & Contact */}
+          {/* Desktop Actions: Clickable Globe Language Selector & Direct Contact */}
           <div className="hidden sm:flex items-center gap-4">
-            {/* Dynamic Language Selector Dropdown (Shown when multiple languages enabled) */}
+            {/* Clickable & Choosable Globe Section (Desktop) */}
             {activeLocales.length > 1 && (
               <div className="relative">
                 <button
-                  onClick={() => setLangDropdownOpen(!langDropdownOpen)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-50 border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors"
+                  type="button"
+                  id="desktop-globe-lang-button"
+                  onClick={() => setLangPickerOpen(!langPickerOpen)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border transition-colors shadow-2xs ${
+                    langPickerOpen
+                      ? "bg-tekhaf-50 text-tekhaf-700 border-tekhaf-300 ring-2 ring-tekhaf-600/20"
+                      : "text-slate-700 bg-slate-50 border-slate-200 hover:bg-slate-100"
+                  }`}
                   aria-label="Select Language"
+                  title="Choose Language"
                 >
                   <Globe className="w-3.5 h-3.5 text-tekhaf-600" />
                   <span>{localeDetails[currentLocale]?.nativeLabel || currentLocale.toUpperCase()}</span>
-                  <ChevronDown className="w-3 h-3 text-slate-400" />
+                  <ChevronDown
+                    className={`w-3 h-3 text-slate-400 transition-transform duration-200 ${
+                      langPickerOpen ? "rotate-180" : ""
+                    }`}
+                  />
                 </button>
-
-                {langDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-44 bg-white rounded-xl shadow-lg border border-slate-200 py-1 z-50">
-                    {activeLocales.map((loc) => (
-                      <button
-                        key={loc}
-                        onClick={() => switchLocale(loc)}
-                        className={`w-full text-left px-3.5 py-2 text-xs flex items-center justify-between hover:bg-slate-50 transition-colors ${
-                          currentLocale === loc
-                            ? "bg-slate-50 text-tekhaf-700 font-bold"
-                            : "text-slate-700"
-                        }`}
-                      >
-                        <span>{localeDetails[loc]?.nativeLabel || loc.toUpperCase()}</span>
-                        <span className="text-[10px] text-slate-400 uppercase font-mono">
-                          {loc}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                )}
               </div>
             )}
 
@@ -174,30 +179,56 @@ export function Navbar({
             </a>
           </div>
 
-          {/* Mobile Menu Button & Dynamic Language Picker */}
+          {/* Mobile Actions: Clickable & Choosable Globe + Hamburger Button */}
           <div className="flex md:hidden items-center gap-2">
+            {/* Clickable & Choosable Globe Button on Mobile Header */}
             {activeLocales.length > 1 && (
               <button
+                type="button"
+                id="mobile-globe-lang-button"
                 onClick={() => {
-                  setMobileMenuOpen(true);
-                  setTimeout(() => {
-                    document.getElementById("mobile-lang-search")?.focus();
-                  }, 150);
+                  setMobileMenuOpen(false);
+                  setLangPickerOpen(!langPickerOpen);
                 }}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold border border-slate-200 rounded-xl text-slate-700 bg-slate-50 hover:bg-slate-100 transition-colors shadow-sm"
+                className={`flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold border rounded-xl transition-all shadow-xs ${
+                  langPickerOpen
+                    ? "bg-tekhaf-700 text-white border-tekhaf-800 ring-2 ring-tekhaf-600/30"
+                    : "text-slate-700 bg-slate-50 border-slate-200 hover:bg-slate-100"
+                }`}
                 aria-label="Select Language"
-                title="Select Language"
+                title="Choose Language"
               >
-                <Globe className="w-3.5 h-3.5 text-tekhaf-600" />
-                <span className="uppercase font-mono">
+                <Globe
+                  className={`w-3.5 h-3.5 ${
+                    langPickerOpen ? "text-white" : "text-tekhaf-600"
+                  }`}
+                />
+                <span className="uppercase font-mono text-[11px]">
                   {currentLocale === "am" ? "አማ" : currentLocale}
                 </span>
+                <ChevronDown
+                  className={`w-3 h-3 transition-transform duration-200 ${
+                    langPickerOpen ? "rotate-180 text-white" : "text-slate-400"
+                  }`}
+                />
               </button>
             )}
+
+            {/* Hamburger Navigation Button */}
             <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 text-slate-700 rounded-xl hover:bg-slate-100 border border-slate-200 shadow-sm transition-colors"
+              type="button"
+              id="mobile-hamburger-button"
+              onClick={() => {
+                setLangPickerOpen(false);
+                setMobileMenuOpen(!mobileMenuOpen);
+              }}
+              className={`p-2 rounded-xl border transition-colors shadow-sm ${
+                mobileMenuOpen
+                  ? "bg-slate-900 text-white border-slate-900"
+                  : "text-slate-700 bg-white hover:bg-slate-100 border-slate-200"
+              }`}
               aria-label="Toggle navigation"
+              title="Menu"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -205,120 +236,132 @@ export function Navbar({
         </div>
       </div>
 
-      {/* Mobile Drawer */}
-      <div
-        className={`md:hidden border-t border-slate-200 bg-white px-4 pt-3 pb-6 space-y-3 shadow-lg ${
-          mobileMenuOpen ? "block animate-in fade-in slide-in-from-top-2 duration-200" : "hidden"
-        }`}
-      >
-          <div className="flex flex-col gap-1">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2 text-sm font-semibold text-slate-800 rounded-lg hover:bg-slate-50"
-              >
-                {link.label}
-              </Link>
-            ))}
-          </div>
+      {/* ======================================================== */}
+      {/* CLICKABLE & CHOOSABLE GLOBE LANGUAGE SELECTOR POPOVER    */}
+      {/* ======================================================== */}
+      {langPickerOpen && (
+        <>
+          {/* Backdrop for click-away */}
+          <div
+            onClick={() => {
+              setLangPickerOpen(false);
+              setLangSearch("");
+            }}
+            className="fixed inset-0 z-40 bg-slate-950/25 backdrop-blur-[1px] transition-opacity"
+            aria-hidden="true"
+          />
 
-          {/* Mobile Language Search & Selection Form with Globe Icon */}
-          <div className="pt-3 border-t border-slate-100 space-y-2.5">
-            <div className="flex items-center justify-between">
-              <label
-                htmlFor="mobile-lang-search"
-                className="flex items-center gap-1.5 text-xs font-bold text-slate-800"
+          {/* Language Picker Dropdown / Popover Card */}
+          <div
+            id="globe-language-popover"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Language Selector"
+            className="absolute top-20 right-4 sm:right-6 lg:right-8 z-50 w-72 sm:w-80 max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-slate-200 p-4 space-y-3 animate-in fade-in zoom-in-95 duration-150"
+          >
+            {/* Popover Header */}
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-tekhaf-50 text-tekhaf-700 flex items-center justify-center">
+                  <Globe className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold text-slate-900 leading-tight">
+                    Select Language
+                  </h3>
+                  <span className="text-[10px] text-slate-400">ቋንቋ ይምረጡ</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setLangPickerOpen(false);
+                  setLangSearch("");
+                }}
+                className="text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100 transition-colors"
+                aria-label="Close language selector"
               >
-                <Globe className="w-3.5 h-3.5 text-tekhaf-600" />
-                <span>Language / ቋንቋ</span>
-              </label>
-              <span className="text-[10px] font-bold text-tekhaf-700 bg-tekhaf-50 px-2 py-0.5 rounded-md border border-tekhaf-200">
-                Active: {localeDetails[currentLocale]?.nativeLabel} ({currentLocale.toUpperCase()})
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Quick 1-Tap Shortcut Pills (EN, አማ, OR, SO, SID) */}
+            <div>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
+                Quick Switch
               </span>
+              <div className="flex flex-wrap gap-1">
+                {activeLocales.map((loc) => {
+                  const isSelected = currentLocale === loc;
+                  const shortLabel =
+                    loc === "en"
+                      ? "EN"
+                      : loc === "am"
+                      ? "አማ"
+                      : loc === "or"
+                      ? "OR"
+                      : loc === "so"
+                      ? "SO"
+                      : "SID";
+
+                  return (
+                    <button
+                      key={loc}
+                      type="button"
+                      onClick={() => switchLocale(loc)}
+                      className={`px-2.5 py-1 text-xs rounded-lg font-bold border transition-all ${
+                        isSelected
+                          ? "bg-tekhaf-700 text-white border-tekhaf-800 shadow-2xs scale-105"
+                          : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200"
+                      }`}
+                      title={localeDetails[loc]?.label}
+                    >
+                      {shortLabel}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
-            {/* Quick-Select Shortcuts (e.g. EN, አማ, OR, SO, SID) */}
-            <div className="flex flex-wrap items-center gap-1.5">
-              {activeLocales.map((loc) => {
-                const isSelected = currentLocale === loc;
-                const shortLabel =
-                  loc === "en"
-                    ? "EN"
-                    : loc === "am"
-                    ? "አማ"
-                    : loc === "or"
-                    ? "OR"
-                    : loc === "so"
-                    ? "SO"
-                    : "SID";
-
-                return (
-                  <button
-                    key={loc}
-                    type="button"
-                    onClick={() => {
-                      switchLocale(loc);
-                      setMobileMenuOpen(false);
-                      setLangSearch("");
-                    }}
-                    className={`px-3 py-1.5 text-xs rounded-xl font-bold transition-all border ${
-                      isSelected
-                        ? "bg-tekhaf-700 text-white border-tekhaf-800 shadow-sm"
-                        : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200"
-                    }`}
-                    title={localeDetails[loc]?.label}
-                  >
-                    <span>{shortLabel}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Search Input with Globe Icon */}
+            {/* Live Search Input with Instant Match */}
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                <Globe className="w-3.5 h-3.5 text-tekhaf-600" />
+              <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400">
+                <Search className="w-3.5 h-3.5" />
               </div>
               <input
-                id="mobile-lang-search"
+                id="globe-lang-search-input"
                 type="text"
                 value={langSearch}
                 onChange={(e) => setLangSearch(e.target.value)}
-                placeholder="Search language (e.g. en, አማ, Oromoo)..."
-                className="w-full pl-9 pr-8 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-tekhaf-600 focus:bg-white transition-all text-slate-800 placeholder-slate-400 font-medium"
+                placeholder="Search language (e.g. en, አማ, or)..."
+                className="w-full pl-8 pr-7 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-tekhaf-600 focus:bg-white transition-all text-slate-800 placeholder-slate-400"
               />
               {langSearch && (
                 <button
                   type="button"
                   onClick={() => setLangSearch("")}
-                  className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-slate-600"
-                  aria-label="Clear language search"
+                  className="absolute inset-y-0 right-0 pr-2 flex items-center text-slate-400 hover:text-slate-600"
+                  aria-label="Clear filter"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
               )}
             </div>
 
-            {/* Filtered Search Results Dropdown/List */}
-            {filteredLocales.length > 0 ? (
-              <div className="space-y-1 pt-1 max-h-44 overflow-y-auto">
-                {filteredLocales.map((loc) => {
+            {/* Choosable Languages List */}
+            <div className="space-y-1 max-h-52 overflow-y-auto pt-1">
+              {filteredLocales.length > 0 ? (
+                filteredLocales.map((loc) => {
                   const meta = localeDetails[loc];
                   const isSelected = currentLocale === loc;
                   return (
                     <button
                       key={loc}
                       type="button"
-                      onClick={() => {
-                        switchLocale(loc);
-                        setMobileMenuOpen(false);
-                        setLangSearch("");
-                      }}
+                      onClick={() => switchLocale(loc)}
                       className={`w-full flex items-center justify-between p-2 rounded-xl text-xs transition-colors border ${
                         isSelected
-                          ? "bg-tekhaf-50/80 border-tekhaf-300 text-tekhaf-900 font-bold"
+                          ? "bg-tekhaf-50/90 border-tekhaf-300 text-tekhaf-900 font-bold"
                           : "bg-white hover:bg-slate-50 border-slate-100 text-slate-700"
                       }`}
                     >
@@ -327,46 +370,77 @@ export function Navbar({
                           {loc}
                         </span>
                         <div className="text-left">
-                          <span className="font-bold block leading-tight">{meta?.nativeLabel}</span>
-                          <span className="text-[10px] text-slate-400 font-normal">{meta?.label}</span>
+                          <span className="font-bold block leading-tight">
+                            {meta?.nativeLabel}
+                          </span>
+                          <span className="text-[10px] text-slate-400 font-normal">
+                            {meta?.label}
+                          </span>
                         </div>
                       </div>
                       {isSelected ? (
-                        <span className="text-tekhaf-700 text-[10px] font-bold bg-white px-2 py-0.5 rounded border border-tekhaf-200 flex items-center gap-1 shadow-xs">
-                          <Check className="w-3 h-3" />
+                        <span className="text-tekhaf-700 text-[10px] font-bold bg-white px-2 py-0.5 rounded border border-tekhaf-200 flex items-center gap-1 shadow-2xs">
+                          <Check className="w-3 h-3 text-emerald-600" />
                           <span>Active</span>
                         </span>
                       ) : (
-                        <span className="text-[11px] text-slate-400">Switch</span>
+                        <span className="text-[11px] text-slate-400 font-medium">
+                          Choose
+                        </span>
                       )}
                     </button>
                   );
-                })}
-              </div>
-            ) : (
-              <div className="p-3 text-center text-xs text-slate-400 bg-slate-50 rounded-xl border border-slate-200">
-                <span>No matching language for &ldquo;{langSearch}&rdquo;</span>
-                <button
-                  type="button"
-                  onClick={() => setLangSearch("")}
-                  className="block mx-auto mt-1 text-[11px] font-bold text-tekhaf-700 hover:underline"
-                >
-                  Clear search
-                </button>
-              </div>
-            )}
+                })
+              ) : (
+                <div className="p-3 text-center text-xs text-slate-400 bg-slate-50 rounded-xl border border-slate-200">
+                  <span>No matching language for &ldquo;{langSearch}&rdquo;</span>
+                  <button
+                    type="button"
+                    onClick={() => setLangSearch("")}
+                    className="block mx-auto mt-1 text-[11px] font-bold text-tekhaf-700 hover:underline"
+                  >
+                    Clear search
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
+        </>
+      )}
 
-          <div className="pt-3 border-t border-slate-100">
-            <a
-              href={`tel:${phone}`}
-              className="w-full text-center py-2.5 bg-tekhaf-700 text-white font-bold rounded-lg text-xs flex items-center justify-center gap-2"
+      {/* ======================================================== */}
+      {/* MOBILE HAMBURGER MENU DRAWER (SITE NAVIGATION ONLY)      */}
+      {/* Language menu option REMOVED as requested                */}
+      {/* ======================================================== */}
+      <div
+        id="mobile-nav-drawer"
+        className={`md:hidden border-t border-slate-200 bg-white px-4 pt-3 pb-6 space-y-4 shadow-lg ${
+          mobileMenuOpen ? "block animate-in fade-in slide-in-from-top-2 duration-200" : "hidden"
+        }`}
+      >
+        <div className="flex flex-col gap-1">
+          {navLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              onClick={() => setMobileMenuOpen(false)}
+              className="px-3 py-2.5 text-sm font-semibold text-slate-800 rounded-xl hover:bg-slate-50 active:bg-tekhaf-50 transition-colors"
             >
-              <Phone className="w-4 h-4" />
-              <span>Call {phoneDisplay}</span>
-            </a>
-          </div>
+              {link.label}
+            </Link>
+          ))}
         </div>
+
+        <div className="pt-2 border-t border-slate-100">
+          <a
+            href={`tel:${phone}`}
+            className="w-full text-center py-2.5 bg-tekhaf-700 hover:bg-tekhaf-800 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm transition-colors"
+          >
+            <Phone className="w-4 h-4" />
+            <span>Call {phoneDisplay}</span>
+          </a>
+        </div>
+      </div>
     </header>
   );
 }
