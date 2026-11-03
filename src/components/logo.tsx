@@ -59,10 +59,10 @@ export function Logo({
   );
 
   return (
-    <div className={`flex items-center gap-3 select-none ${className}`}>
+    <div className={`flex items-center gap-2.5 sm:gap-3 select-none shrink-0 ${className}`}>
       {/* Dynamic Emblem: Custom Uploaded Logo or Default Tractor Emblem */}
       {cleanLogoUrl && !imageFailed ? (
-        <div className="w-11 h-11 rounded-xl bg-white flex items-center justify-center shrink-0 shadow-sm border border-slate-200 overflow-hidden p-1">
+        <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-white flex items-center justify-center shrink-0 shadow-sm border border-slate-200 overflow-hidden p-1">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={cleanLogoUrl}
@@ -72,13 +72,31 @@ export function Logo({
           />
         </div>
       ) : (
-        defaultEmblem
+        <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-tekhaf-700 flex items-center justify-center text-white shrink-0 shadow-sm border border-tekhaf-800">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="w-5 h-5 sm:w-6 sm:h-6"
+          >
+            <path d="M3 17h18" />
+            <path d="M7 17v-4h6l2 4" />
+            <path d="M13 13V8h-4l-2 5" />
+            <path d="M10 8V5h2" />
+            <circle cx="6" cy="17" r="3" />
+            <circle cx="17.5" cy="17" r="2" />
+            <path d="M12 5V3" />
+          </svg>
+        </div>
       )}
 
       {/* Representative Headline & Subline */}
-      <div className="flex flex-col leading-tight">
+      <div className="flex flex-col leading-tight min-w-0">
         <span
-          className={`text-base sm:text-lg font-black tracking-tight uppercase transition-colors ${
+          className={`text-sm sm:text-base lg:text-lg font-black tracking-tight uppercase transition-colors truncate ${
             isLightText
               ? "text-white"
               : "text-slate-900 group-hover:text-tekhaf-700"
@@ -88,11 +106,11 @@ export function Logo({
         </span>
         {!isCompact && (
           <span
-            className={`text-[11px] font-medium ${
+            className={`text-[10px] sm:text-[11px] font-medium truncate ${
               isLightText ? "text-slate-400" : "text-slate-500"
             }`}
           >
-            {jobTitle} •{" "}
+            <span className="hidden sm:inline">{jobTitle} • </span>
             <span
               className={
                 isLightText

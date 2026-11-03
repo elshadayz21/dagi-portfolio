@@ -123,14 +123,14 @@ export function Navbar({
           </Link>
 
           {/* Desktop Nav Items */}
-          <nav className="hidden md:flex items-center gap-7">
+          <nav className="hidden lg:flex items-center gap-3 xl:gap-6 shrink-0">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`text-sm font-semibold transition-colors ${
+                  className={`text-xs xl:text-sm font-semibold whitespace-nowrap transition-colors ${
                     isActive
                       ? "text-tekhaf-700 border-b-2 border-tekhaf-700 pb-1"
                       : "text-slate-600 hover:text-tekhaf-700"
@@ -143,7 +143,7 @@ export function Navbar({
           </nav>
 
           {/* Desktop Actions: Clickable Globe Language Selector & Direct Contact */}
-          <div className="hidden sm:flex items-center gap-4">
+          <div className="hidden lg:flex items-center gap-2.5 xl:gap-3.5 shrink-0">
             {/* Clickable & Choosable Globe Section (Desktop) */}
             {activeLocales.length > 1 && (
               <div className="relative">
@@ -160,7 +160,8 @@ export function Navbar({
                   title="Choose Language"
                 >
                   <Globe className="w-3.5 h-3.5 text-tekhaf-600" />
-                  <span>{localeDetails[currentLocale]?.nativeLabel || currentLocale.toUpperCase()}</span>
+                  <span className="hidden xl:inline">{localeDetails[currentLocale]?.nativeLabel || currentLocale.toUpperCase()}</span>
+                  <span className="xl:hidden uppercase font-mono font-bold text-[11px]">{currentLocale === "am" ? "አማ" : currentLocale}</span>
                   <ChevronDown
                     className={`w-3 h-3 text-slate-400 transition-transform duration-200 ${
                       langPickerOpen ? "rotate-180" : ""
@@ -173,15 +174,26 @@ export function Navbar({
             {/* Direct Phone / Contact CTA */}
             <a
               href={`tel:${phone}`}
-              className="bg-tekhaf-700 hover:bg-tekhaf-800 text-white text-xs font-bold px-4 py-2.5 rounded-lg transition-colors flex items-center gap-1.5 shadow-sm"
+              className="bg-tekhaf-700 hover:bg-tekhaf-800 text-white text-xs font-bold px-3.5 xl:px-4 py-2 rounded-lg transition-colors flex items-center gap-1.5 shadow-sm whitespace-nowrap"
             >
-              <Phone className="w-3.5 h-3.5" />
-              <span>{phoneDisplay}</span>
+              <Phone className="w-3.5 h-3.5 shrink-0" />
+              <span className="hidden xl:inline">{phoneDisplay}</span>
+              <span className="xl:hidden">Call</span>
             </a>
           </div>
 
-          {/* Mobile Actions: Clickable & Choosable Globe + Hamburger Button */}
-          <div className="flex md:hidden items-center gap-2">
+          {/* Mobile Actions: Direct Call + Clickable Globe + Hamburger Button */}
+          <div className="flex lg:hidden items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* Quick 1-tap Phone Call on Mobile Header */}
+            <a
+              href={`tel:${phone}`}
+              className="p-2 text-tekhaf-700 bg-tekhaf-50/90 hover:bg-tekhaf-100 border border-tekhaf-200 rounded-xl transition-colors sm:hidden shadow-xs"
+              title={`Call ${phoneDisplay}`}
+              aria-label="Direct Phone Call"
+            >
+              <Phone className="w-4 h-4" />
+            </a>
+
             {/* Clickable & Choosable Globe Button on Mobile Header */}
             {activeLocales.length > 1 && (
               <button
@@ -411,28 +423,46 @@ export function Navbar({
 
       {/* ======================================================== */}
       {/* MOBILE HAMBURGER MENU DRAWER (SITE NAVIGATION ONLY)      */}
-      {/* Language menu option REMOVED as requested                */}
+      {/* Seamless absolute overlay with backdrop                 */}
       {/* ======================================================== */}
+      {mobileMenuOpen && (
+        <div
+          onClick={() => setMobileMenuOpen(false)}
+          className="fixed inset-0 top-20 z-20 bg-slate-950/30 backdrop-blur-xs lg:hidden transition-opacity"
+          aria-hidden="true"
+        />
+      )}
+
       <div
         id="mobile-nav-drawer"
-        className={`md:hidden border-t border-slate-200 bg-white px-4 pt-3 pb-6 space-y-4 shadow-lg ${
+        className={`absolute top-full left-0 right-0 z-30 lg:hidden border-t border-slate-200 bg-white/98 backdrop-blur-md px-4 pt-3 pb-6 space-y-4 shadow-xl max-h-[calc(100vh-5rem)] overflow-y-auto ${
           mobileMenuOpen ? "block animate-in fade-in slide-in-from-top-2 duration-200" : "hidden"
         }`}
       >
         <div className="flex flex-col gap-1">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={() => setMobileMenuOpen(false)}
-              className="px-3 py-2.5 text-sm font-semibold text-slate-800 rounded-xl hover:bg-slate-50 active:bg-tekhaf-50 transition-colors"
-            >
-              {link.label}
-            </Link>
-          ))}
+          {navLinks.map((link) => {
+            const isActive = pathname === link.href;
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={() => setMobileMenuOpen(false)}
+                className={`px-3.5 py-2.5 text-sm font-semibold rounded-xl transition-colors flex items-center justify-between ${
+                  isActive
+                    ? "bg-tekhaf-50 text-tekhaf-800 font-bold border-l-4 border-tekhaf-700 pl-3"
+                    : "text-slate-800 hover:bg-slate-50 active:bg-tekhaf-50"
+                }`}
+              >
+                <span>{link.label}</span>
+                {isActive && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-tekhaf-700" />
+                )}
+              </Link>
+            );
+          })}
         </div>
 
-        <div className="pt-2 border-t border-slate-100">
+        <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
           <a
             href={`tel:${phone}`}
             className="w-full text-center py-2.5 bg-tekhaf-700 hover:bg-tekhaf-800 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm transition-colors"
