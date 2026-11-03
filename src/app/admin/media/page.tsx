@@ -19,6 +19,7 @@ import {
   FolderOpen,
 } from "lucide-react";
 import { MediaAsset } from "@/lib/media-store";
+import { Pagination } from "@/components/pagination";
 
 export default function AdminMediaPage() {
   const [mediaItems, setMediaItems] = useState<MediaAsset[]>([]);
@@ -26,6 +27,8 @@ export default function AdminMediaPage() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(8);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Upload Modal State
@@ -263,6 +266,13 @@ export default function AdminMediaPage() {
     });
   }, [mediaItems, searchQuery, selectedCategory]);
 
+  const totalPages = Math.ceil(filteredMedia.length / pageSize) || 1;
+
+  const paginatedMedia = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredMedia.slice(start, start + pageSize);
+  }, [filteredMedia, currentPage, pageSize]);
+
   return (
     <div className="space-y-6">
       {/* Toast Notification */}
@@ -331,7 +341,10 @@ export default function AdminMediaPage() {
             type="text"
             placeholder="Search media by title or keyword..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full text-xs pl-9 pr-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600 bg-slate-50/50"
           />
         </div>
@@ -340,7 +353,10 @@ export default function AdminMediaPage() {
           {["ALL", "Tractors", "Implements", "Showroom", "Branding", "Brochures"].map((cat) => (
             <button
               key={cat}
-              onClick={() => setSelectedCategory(cat)}
+              onClick={() => {
+                setSelectedCategory(cat);
+                setCurrentPage(1);
+              }}
               className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition-colors ${
                 selectedCategory === cat
                   ? "bg-tekhaf-700 text-white"
@@ -368,96 +384,113 @@ export default function AdminMediaPage() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-          {filteredMedia.map((item) => (
-            <div
-              key={item.id}
-              className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow group flex flex-col justify-between"
-            >
-              {/* Media Preview Box */}
-              <div className="relative h-44 bg-slate-100 overflow-hidden">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={item.url}
-                  alt={item.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src =
-                      "https://images.unsplash.com/photo-1592878904946-b3cd8ae243d0?w=600&q=80";
-                  }}
-                />
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+            {paginatedMedia.map((item) => (
+              <div
+                key={item.id}
+                className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow group flex flex-col justify-between"
+              >
+                {/* Media Preview Box */}
+                <div className="relative h-44 bg-slate-100 overflow-hidden">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={item.url}
+                    alt={item.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src =
+                        "https://images.unsplash.com/photo-1592878904946-b3cd8ae243d0?w=600&q=80";
+                    }}
+                  />
 
-                {/* Category Badge */}
-                <span className="absolute top-2.5 left-2.5 bg-slate-900/80 backdrop-blur-sm text-white text-[10px] font-semibold px-2 py-0.5 rounded-md">
-                  {item.category}
-                </span>
+                  {/* Category Badge */}
+                  <span className="absolute top-2.5 left-2.5 bg-slate-900/80 backdrop-blur-sm text-white text-[10px] font-semibold px-2 py-0.5 rounded-md">
+                    {item.category}
+                  </span>
 
-                {/* Quick Action Overlay */}
-                <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button
-                    onClick={() => copyUrl(item.url, item.id)}
-                    className="p-1.5 rounded-lg bg-white/95 text-slate-700 hover:text-tekhaf-700 shadow-md transition-colors"
-                    title="Copy URL"
-                  >
-                    {copiedId === item.id ? (
-                      <Check className="w-3.5 h-3.5 text-emerald-600" />
-                    ) : (
-                      <Copy className="w-3.5 h-3.5" />
-                    )}
-                  </button>
+                  {/* Quick Action Overlay */}
+                  <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => copyUrl(item.url, item.id)}
+                      className="p-1.5 rounded-lg bg-white/95 text-slate-700 hover:text-tekhaf-700 shadow-md transition-colors"
+                      title="Copy URL"
+                    >
+                      {copiedId === item.id ? (
+                        <Check className="w-3.5 h-3.5 text-emerald-600" />
+                      ) : (
+                        <Copy className="w-3.5 h-3.5" />
+                      )}
+                    </button>
 
-                  <button
-                    onClick={() => openEditModal(item)}
-                    className="p-1.5 rounded-lg bg-white/95 text-slate-700 hover:text-tekhaf-700 shadow-md transition-colors"
-                    title="Edit or Replace Image"
-                  >
-                    <Edit2 className="w-3.5 h-3.5" />
-                  </button>
+                    <button
+                      onClick={() => openEditModal(item)}
+                      className="p-1.5 rounded-lg bg-white/95 text-slate-700 hover:text-tekhaf-700 shadow-md transition-colors"
+                      title="Edit or Replace Image"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                    </button>
 
-                  <button
-                    onClick={() => handleDelete(item.id)}
-                    disabled={deletingId === item.id}
-                    className="p-1.5 rounded-lg bg-white/95 text-rose-600 hover:bg-rose-50 shadow-md transition-colors disabled:opacity-50"
-                    title="Delete Asset"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Card Meta & Actions */}
-              <div className="p-3.5 space-y-2.5">
-                <div>
-                  <h3 className="font-bold text-xs text-slate-800 line-clamp-1" title={item.title}>
-                    {item.title}
-                  </h3>
-                  <div className="flex items-center justify-between text-[10px] text-slate-400 mt-1">
-                    <span>{item.format} • {item.size}</span>
-                    <span>{new Date(item.createdAt).toLocaleDateString()}</span>
+                    <button
+                      onClick={() => handleDelete(item.id)}
+                      disabled={deletingId === item.id}
+                      className="p-1.5 rounded-lg bg-white/95 text-rose-600 hover:bg-rose-50 shadow-md transition-colors disabled:opacity-50"
+                      title="Delete Asset"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
 
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
-                  <button
-                    onClick={() => openEditModal(item)}
-                    className="flex-1 py-1.5 px-2 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-lg text-[11px] font-semibold border border-slate-200 transition-colors flex items-center justify-center gap-1.5"
-                  >
-                    <Edit2 className="w-3 h-3 text-slate-500" />
-                    <span>Edit / Replace</span>
-                  </button>
+                {/* Card Meta & Actions */}
+                <div className="p-3.5 space-y-2.5">
+                  <div>
+                    <h3 className="font-bold text-xs text-slate-800 line-clamp-1" title={item.title}>
+                      {item.title}
+                    </h3>
+                    <div className="flex items-center justify-between text-[10px] text-slate-400 mt-1">
+                      <span>{item.format} • {item.size}</span>
+                      <span>{new Date(item.createdAt).toLocaleDateString()}</span>
+                    </div>
+                  </div>
 
-                  <button
-                    onClick={() => setAsSiteLogo(item.url)}
-                    className="py-1.5 px-2.5 bg-tekhaf-50 hover:bg-tekhaf-100 text-tekhaf-700 rounded-lg text-[11px] font-semibold border border-tekhaf-200 transition-colors flex items-center gap-1"
-                    title="Use this image as active site logo & favicon"
-                  >
-                    <Sparkles className="w-3 h-3" />
-                    <span>Set as Logo</span>
-                  </button>
+                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
+                    <button
+                      onClick={() => openEditModal(item)}
+                      className="flex-1 py-1.5 px-2 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-lg text-[11px] font-semibold border border-slate-200 transition-colors flex items-center justify-center gap-1.5"
+                    >
+                      <Edit2 className="w-3 h-3 text-slate-500" />
+                      <span>Edit / Replace</span>
+                    </button>
+
+                    <button
+                      onClick={() => setAsSiteLogo(item.url)}
+                      className="py-1.5 px-2.5 bg-tekhaf-50 hover:bg-tekhaf-100 text-tekhaf-700 rounded-lg text-[11px] font-semibold border border-tekhaf-200 transition-colors flex items-center gap-1"
+                      title="Use this image as active site logo & favicon"
+                    >
+                      <Sparkles className="w-3 h-3" />
+                      <span>Set as Logo</span>
+                    </button>
+                  </div>
                 </div>
               </div>
+            ))}
+          </div>
+
+          {filteredMedia.length > 0 && (
+            <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-sm">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={filteredMedia.length}
+                pageSize={pageSize}
+                onPageChange={setCurrentPage}
+                onPageSizeChange={setPageSize}
+                pageSizeOptions={[8, 12, 24, 48]}
+                itemName="assets"
+              />
             </div>
-          ))}
+          )}
         </div>
       )}
 

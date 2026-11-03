@@ -17,12 +17,15 @@ import {
   FileSpreadsheet,
 } from "lucide-react";
 import { ActivityLogItem } from "@/lib/activity-store";
+import { Pagination } from "@/components/pagination";
 
 export default function AdminActivityLogPage() {
   const [logs, setLogs] = useState<ActivityLogItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   useEffect(() => {
     fetchLogs();
@@ -55,6 +58,13 @@ export default function AdminActivityLogPage() {
       return matchesSearch && matchesCategory;
     });
   }, [logs, searchQuery, selectedCategory]);
+
+  const totalPages = Math.ceil(filteredLogs.length / pageSize) || 1;
+
+  const paginatedLogs = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredLogs.slice(start, start + pageSize);
+  }, [filteredLogs, currentPage, pageSize]);
 
   const metrics = useMemo(() => {
     return {
@@ -196,7 +206,10 @@ export default function AdminActivityLogPage() {
             type="text"
             placeholder="Search activities by actor, title, or details..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full text-xs pl-9 pr-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600 bg-slate-50/50"
           />
         </div>
@@ -205,7 +218,10 @@ export default function AdminActivityLogPage() {
           {["ALL", "LEADS", "PRODUCTS", "MEDIA", "BRAND", "SYSTEM"].map((cat) => (
             <button
               key={cat}
-              onClick={() => setSelectedCategory(cat)}
+              onClick={() => {
+                setSelectedCategory(cat);
+                setCurrentPage(1);
+              }}
               className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition-colors ${
                 selectedCategory === cat
                   ? "bg-tekhaf-700 text-white"
@@ -233,9 +249,10 @@ export default function AdminActivityLogPage() {
           </p>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden divide-y divide-slate-100">
-          {filteredLogs.map((log) => {
-            const date = new Date(log.timestamp);
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="divide-y divide-slate-100">
+            {paginatedLogs.map((log) => {
+              const date = new Date(log.timestamp);
             return (
               <div
                 key={log.id}
@@ -276,6 +293,20 @@ export default function AdminActivityLogPage() {
               </div>
             );
           })}
+          </div>
+
+          {filteredLogs.length > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={filteredLogs.length}
+              pageSize={pageSize}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={setPageSize}
+              pageSizeOptions={[5, 10, 20, 50]}
+              itemName="activities"
+            />
+          )}
         </div>
       )}
     </div>

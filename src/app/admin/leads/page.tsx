@@ -22,6 +22,7 @@ import {
   ChevronDown,
   CheckCircle2,
 } from "lucide-react";
+import { Pagination } from "@/components/pagination";
 
 export default function LeadsCRMPage() {
   const [leads, setLeads] = useState<LeadRecord[]>([]);
@@ -29,6 +30,8 @@ export default function LeadsCRMPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [regionFilter, setRegionFilter] = useState("ALL");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [selectedLead, setSelectedLead] = useState<LeadRecord | null>(null);
   const [newNote, setNewNote] = useState("");
   const [submittingNote, setSubmittingNote] = useState(false);
@@ -208,6 +211,13 @@ export default function LeadsCRMPage() {
     });
   }, [leads, searchQuery, statusFilter, regionFilter]);
 
+  const totalPages = Math.ceil(filteredLeads.length / pageSize) || 1;
+
+  const paginatedLeads = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredLeads.slice(start, start + pageSize);
+  }, [filteredLeads, currentPage, pageSize]);
+
   const uniqueRegions = useMemo(() => {
     const list = Array.from(new Set(leads.map((l) => l.region)));
     return ["ALL", ...list];
@@ -302,7 +312,10 @@ export default function LeadsCRMPage() {
           <input
             type="text"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1);
+            }}
             placeholder="Search by customer name, phone, region, or tractor..."
             className="w-full pl-10 pr-4 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600 bg-slate-50/50"
           />
@@ -312,7 +325,10 @@ export default function LeadsCRMPage() {
         <div>
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={(e) => {
+              setStatusFilter(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-tekhaf-600"
           >
             <option value="ALL">All Statuses ({leads.length})</option>
@@ -329,7 +345,10 @@ export default function LeadsCRMPage() {
         <div>
           <select
             value={regionFilter}
-            onChange={(e) => setRegionFilter(e.target.value)}
+            onChange={(e) => {
+              setRegionFilter(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-tekhaf-600"
           >
             <option value="ALL">All Regions</option>
@@ -369,7 +388,7 @@ export default function LeadsCRMPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {filteredLeads.map((lead) => {
+                    {paginatedLeads.map((lead) => {
                       const isSelected = selectedLead?.id === lead.id;
                       return (
                         <tr
@@ -448,6 +467,19 @@ export default function LeadsCRMPage() {
                   </tbody>
                 </table>
               </div>
+            )}
+
+            {!loading && filteredLeads.length > 0 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={filteredLeads.length}
+                pageSize={pageSize}
+                onPageChange={setCurrentPage}
+                onPageSizeChange={setPageSize}
+                pageSizeOptions={[5, 10, 20, 50]}
+                itemName="inquiries"
+              />
             )}
           </div>
         </div>

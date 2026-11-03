@@ -8,6 +8,7 @@ import { getDictionary } from "@/lib/i18n/dictionaries";
 import { TractorProduct } from "@/lib/data/inventory";
 import { InquiryModal } from "./inquiry-modal";
 import { Search, RotateCcw, ArrowRight, Tractor } from "lucide-react";
+import { Pagination } from "./pagination";
 
 interface ProductsFilterViewProps {
   currentLocale: Locale;
@@ -24,6 +25,8 @@ export function ProductsFilterView({
   const [selectedBrand, setSelectedBrand] = useState("ALL");
   const [selectedHP, setSelectedHP] = useState("ALL");
   const [selectedAvailability, setSelectedAvailability] = useState("ALL");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(6);
 
   const brands = useMemo(() => {
     const list = Array.from(new Set(initialProducts.map((p) => p.brand)));
@@ -56,11 +59,19 @@ export function ProductsFilterView({
     });
   }, [initialProducts, searchQuery, selectedBrand, selectedHP, selectedAvailability]);
 
+  const totalPages = Math.ceil(filteredProducts.length / pageSize) || 1;
+
+  const paginatedProducts = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredProducts.slice(start, start + pageSize);
+  }, [filteredProducts, currentPage, pageSize]);
+
   const handleResetFilters = () => {
     setSearchQuery("");
     setSelectedBrand("ALL");
     setSelectedHP("ALL");
     setSelectedAvailability("ALL");
+    setCurrentPage(1);
   };
 
   return (
@@ -72,7 +83,10 @@ export function ProductsFilterView({
           <input
             type="text"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1);
+            }}
             placeholder={dict.productsPage.searchPlaceholder}
             className="w-full pl-10 pr-4 py-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tekhaf-600 bg-slate-50/50"
           />
@@ -85,7 +99,10 @@ export function ProductsFilterView({
             </label>
             <select
               value={selectedBrand}
-              onChange={(e) => setSelectedBrand(e.target.value)}
+              onChange={(e) => {
+                setSelectedBrand(e.target.value);
+                setCurrentPage(1);
+              }}
               className="w-full text-xs font-semibold px-3 py-2 rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-tekhaf-600"
             >
               <option value="ALL">{dict.productsPage.allBrands}</option>
@@ -103,7 +120,10 @@ export function ProductsFilterView({
             </label>
             <select
               value={selectedHP}
-              onChange={(e) => setSelectedHP(e.target.value)}
+              onChange={(e) => {
+                setSelectedHP(e.target.value);
+                setCurrentPage(1);
+              }}
               className="w-full text-xs font-semibold px-3 py-2 rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-tekhaf-600"
             >
               <option value="ALL">{dict.productsPage.allHPs}</option>
@@ -119,7 +139,10 @@ export function ProductsFilterView({
             </label>
             <select
               value={selectedAvailability}
-              onChange={(e) => setSelectedAvailability(e.target.value)}
+              onChange={(e) => {
+                setSelectedAvailability(e.target.value);
+                setCurrentPage(1);
+              }}
               className="w-full text-xs font-semibold px-3 py-2 rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-tekhaf-600"
             >
               <option value="ALL">{dict.productsPage.allAvailability}</option>
@@ -155,8 +178,9 @@ export function ProductsFilterView({
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredProducts.map((tractor) => (
+        <div className="space-y-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {paginatedProducts.map((tractor) => (
             <div
               key={tractor.id}
               className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between"
@@ -215,6 +239,22 @@ export function ProductsFilterView({
               </div>
             </div>
           ))}
+          </div>
+
+          {filteredProducts.length > 0 && (
+            <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-sm bg-white">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={filteredProducts.length}
+                pageSize={pageSize}
+                onPageChange={setCurrentPage}
+                onPageSizeChange={setPageSize}
+                pageSizeOptions={[6, 9, 15, 30]}
+                itemName="tractors"
+              />
+            </div>
+          )}
         </div>
       )}
     </div>

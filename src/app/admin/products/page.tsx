@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { TractorProduct } from "@/lib/data/inventory";
@@ -17,6 +17,7 @@ import {
   Search,
   Check,
 } from "lucide-react";
+import { Pagination } from "@/components/pagination";
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<TractorProduct[]>([]);
@@ -29,6 +30,8 @@ export default function AdminProductsPage() {
   const [notice, setNotice] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [brandFilter, setBrandFilter] = useState("ALL");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(8);
 
   const [form, setForm] = useState({
     title: "",
@@ -216,16 +219,25 @@ export default function AdminProductsPage() {
     }
   };
 
-  const filteredProducts = products.filter((p) => {
-    const matchesSearch =
-      p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.modelNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.brand.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesBrand = brandFilter === "ALL" || p.brand === brandFilter;
-    return matchesSearch && matchesBrand;
-  });
+  const filteredProducts = useMemo(() => {
+    return products.filter((p) => {
+      const matchesSearch =
+        p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.modelNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.brand.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesBrand = brandFilter === "ALL" || p.brand === brandFilter;
+      return matchesSearch && matchesBrand;
+    });
+  }, [products, searchQuery, brandFilter]);
 
-  const brands = Array.from(new Set(products.map((p) => p.brand)));
+  const totalPages = Math.ceil(filteredProducts.length / pageSize) || 1;
+
+  const paginatedProducts = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredProducts.slice(start, start + pageSize);
+  }, [filteredProducts, currentPage, pageSize]);
+
+  const brands = useMemo(() => Array.from(new Set(products.map((p) => p.brand))), [products]);
 
   return (
     <div className="space-y-6 max-w-6xl pb-12">
@@ -272,7 +284,10 @@ export default function AdminProductsPage() {
           <input
             type="text"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1);
+            }}
             placeholder="Search tractors by title, model number, brand..."
             className="w-full pl-9 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-tekhaf-600"
           />
@@ -280,7 +295,10 @@ export default function AdminProductsPage() {
 
         <div className="flex items-center gap-2 overflow-x-auto pb-1">
           <button
-            onClick={() => setBrandFilter("ALL")}
+            onClick={() => {
+              setBrandFilter("ALL");
+              setCurrentPage(1);
+            }}
             className={`px-3 py-2 rounded-xl text-xs font-bold transition-colors whitespace-nowrap ${
               brandFilter === "ALL"
                 ? "bg-tekhaf-700 text-white"
@@ -292,7 +310,10 @@ export default function AdminProductsPage() {
           {brands.map((b) => (
             <button
               key={b}
-              onClick={() => setBrandFilter(b)}
+              onClick={() => {
+                setBrandFilter(b);
+                setCurrentPage(1);
+              }}
               className={`px-3 py-2 rounded-xl text-xs font-bold transition-colors whitespace-nowrap ${
                 brandFilter === b
                   ? "bg-tekhaf-700 text-white"
@@ -327,7 +348,7 @@ export default function AdminProductsPage() {
                   </td>
                 </tr>
               ) : (
-                filteredProducts.map((tractor) => (
+                paginatedProducts.map((tractor) => (
                   <tr key={tractor.id} className="hover:bg-slate-50/70 transition-colors">
                     <td className="p-4 flex items-center gap-3">
                       <div className="relative w-14 h-11 rounded-lg overflow-hidden bg-slate-100 shrink-0 border border-slate-200">
@@ -403,6 +424,19 @@ export default function AdminProductsPage() {
             </tbody>
           </table>
         </div>
+
+        {filteredProducts.length > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={filteredProducts.length}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={setPageSize}
+            pageSizeOptions={[4, 8, 12, 24]}
+            itemName="tractors"
+          />
+        )}
       </div>
 
       {/* Add / Edit Modal */}
