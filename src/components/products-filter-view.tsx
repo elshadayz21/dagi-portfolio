@@ -9,6 +9,7 @@ import { TractorProduct } from "@/lib/data/inventory";
 import { InquiryModal } from "./inquiry-modal";
 import { Search, RotateCcw, ArrowRight, Tractor, ArrowUpDown } from "lucide-react";
 import { Pagination } from "./pagination";
+import { ScrollReveal } from "./scroll-reveal";
 
 interface ProductsFilterViewProps {
   currentLocale: Locale;
@@ -261,72 +262,77 @@ export function ProductsFilterView({
       ) : (
         <div className="space-y-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {paginatedProducts.map((tractor) => (
-            <div
-              key={tractor.id}
-              className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between"
-            >
-              <div className="relative h-52 bg-slate-100">
-                <Image
-                  src={tractor.image}
-                  alt={tractor.title}
-                  fill
-                  className="object-cover"
-                />
-                <span className="absolute top-3 left-3 bg-slate-900/90 text-white text-[11px] font-semibold px-2.5 py-0.5 rounded-md">
-                  {tractor.horsepower} HP • {tractor.driveType}
-                </span>
-                <span className="absolute top-3 right-3 text-[10px] font-semibold bg-white/90 text-slate-800 px-2 py-0.5 rounded-md border border-slate-200">
-                  {tractor.availability === "IN_STOCK"
-                    ? dict.common.inStock
-                    : dict.common.preOrder}
-                </span>
-              </div>
-
-              <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
-                <div>
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                      {tractor.brand}
+            {paginatedProducts.map((tractor, index) => (
+              <ScrollReveal
+                key={tractor.id}
+                direction="up"
+                distance={28}
+                delay={(index % 6) * 80}
+                duration={700}
+              >
+                <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between h-full">
+                  <div className="relative h-52 bg-slate-100">
+                    <Image
+                      src={tractor.image}
+                      alt={tractor.title}
+                      fill
+                      className="object-cover"
+                    />
+                    <span className="absolute top-3 left-3 bg-slate-900/90 text-white text-[11px] font-semibold px-2.5 py-0.5 rounded-md">
+                      {tractor.horsepower} HP • {tractor.driveType}
                     </span>
-                    {tractor.category && (
-                      <span className="text-[10px] font-semibold text-tekhaf-700 bg-tekhaf-50 border border-tekhaf-200 px-2 py-0.5 rounded-md">
-                        {tractor.category}
-                      </span>
-                    )}
+                    <span className="absolute top-3 right-3 text-[10px] font-semibold bg-white/90 text-slate-800 px-2 py-0.5 rounded-md border border-slate-200">
+                      {tractor.availability === "IN_STOCK"
+                        ? dict.common.inStock
+                        : dict.common.preOrder}
+                    </span>
                   </div>
-                  <h3 className="text-base font-bold text-slate-900 mt-1">
-                    <Link
-                      href={`/${currentLocale}/products/${tractor.slug}`}
-                      className="hover:text-tekhaf-700 transition-colors"
-                    >
-                      {tractor.title}
-                    </Link>
-                  </h3>
-                  <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
-                    {tractor.summary}
-                  </p>
-                </div>
 
-                <div className="pt-3 border-t border-slate-100 flex items-center gap-2">
-                  <Link
-                    href={`/${currentLocale}/products/${tractor.slug}`}
-                    className="flex-1 text-center py-2 px-3 rounded-lg border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors flex items-center justify-center gap-1"
-                  >
-                    <span>{dict.common.details}</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </Link>
+                  <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                    <div>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                          {tractor.brand}
+                        </span>
+                        {tractor.category && (
+                          <span className="text-[10px] font-semibold text-tekhaf-700 bg-tekhaf-50 border border-tekhaf-200 px-2 py-0.5 rounded-md">
+                            {tractor.category}
+                          </span>
+                        )}
+                      </div>
+                      <h3 className="text-base font-bold text-slate-900 mt-1">
+                        <Link
+                          href={`/${currentLocale}/products/${tractor.slug}`}
+                          className="hover:text-tekhaf-700 transition-colors"
+                        >
+                          {tractor.title}
+                        </Link>
+                      </h3>
+                      <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
+                        {tractor.summary}
+                      </p>
+                    </div>
 
-                  <InquiryModal
-                    currentLocale={currentLocale}
-                    tractorTitle={tractor.title}
-                    triggerButtonText="Inquire"
-                    className="flex-1 text-center py-2 px-3 rounded-lg bg-tekhaf-700 hover:bg-tekhaf-800 text-white text-xs font-bold transition-colors shadow-sm"
-                  />
+                    <div className="pt-3 border-t border-slate-100 flex items-center gap-2">
+                      <Link
+                        href={`/${currentLocale}/products/${tractor.slug}`}
+                        className="flex-1 text-center py-2 px-3 rounded-lg border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors flex items-center justify-center gap-1"
+                      >
+                        <span>{dict.common.details}</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </Link>
+
+                      <InquiryModal
+                        currentLocale={currentLocale}
+                        tractorTitle={tractor.title}
+                        triggerButtonText="Inquire"
+                        className="flex-1 text-center py-2 px-3 rounded-lg bg-tekhaf-700 hover:bg-tekhaf-800 text-white text-xs font-bold transition-colors shadow-sm"
+                      />
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          ))}
+              </ScrollReveal>
+            ))}
           </div>
 
           {filteredProducts.length > 0 && (

@@ -7,6 +7,7 @@ import { getAllGalleryItems } from "@/lib/gallery-store";
 import { LeadCaptureForm } from "@/components/lead-capture-form";
 import { InquiryModal } from "@/components/inquiry-modal";
 import { GallerySection } from "@/components/gallery-section";
+import { ScrollReveal, StaggerGroup } from "@/components/scroll-reveal";
 import {
   Tractor,
   Phone,
@@ -40,7 +41,12 @@ export default async function HomePage({ params }: HomePageProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             {/* Left Column */}
-            <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
+            <ScrollReveal
+              direction="left"
+              distance={35}
+              duration={800}
+              className="lg:col-span-7 space-y-6 text-center lg:text-left"
+            >
               <div className="space-y-2">
                 <span className="text-xs font-semibold tracking-wider uppercase text-tekhaf-700 block">
                   {cms.jobTitle}
@@ -83,10 +89,16 @@ export default async function HomePage({ params }: HomePageProps) {
                   <span>{cms.phoneDisplay}</span>
                 </a>
               </div>
-            </div>
+            </ScrollReveal>
 
             {/* Right Column: Consultant Portrait */}
-            <div className="lg:col-span-5 flex justify-center">
+            <ScrollReveal
+              direction="right"
+              distance={35}
+              duration={850}
+              delay={150}
+              className="lg:col-span-5 flex justify-center"
+            >
               <div className="relative w-72 h-88 sm:w-80 sm:h-96 rounded-2xl overflow-hidden shadow-lg border border-slate-200 bg-slate-100">
                 <Image
                   src={cms.profilePhoto}
@@ -96,14 +108,14 @@ export default async function HomePage({ params }: HomePageProps) {
                   className="object-cover"
                 />
               </div>
-            </div>
+            </ScrollReveal>
           </div>
         </div>
       </section>
 
-      {/* 2. SERVICES OVERVIEW: 3 Clean Pillars */}
+      {/* 2. SERVICES OVERVIEW: 3 Clean Pillars with Staggered Scroll Reveal */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <StaggerGroup className="grid grid-cols-1 md:grid-cols-3 gap-6" staggerInterval={140} distance={32}>
           <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-sm space-y-3">
             <div className="w-10 h-10 rounded-xl bg-tekhaf-50 text-tekhaf-700 flex items-center justify-center">
               <Tractor className="w-5 h-5" />
@@ -139,12 +151,12 @@ export default async function HomePage({ params }: HomePageProps) {
               Direct farm delivery with technician inspection and hands-on driver orientation on safety and regular maintenance.
             </p>
           </div>
-        </div>
+        </StaggerGroup>
       </section>
 
-      {/* 3. TRACTOR SHOWCASE: Clean, Simple Grid */}
+      {/* 3. TRACTOR SHOWCASE: Clean, Simple Grid with Staggered Fly-In */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between mb-8">
+        <ScrollReveal direction="up" distance={25} className="flex items-center justify-between mb-8">
           <div>
             <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
               Featured Machinery
@@ -160,9 +172,9 @@ export default async function HomePage({ params }: HomePageProps) {
             <span>All Tractors</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
-        </div>
+        </ScrollReveal>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StaggerGroup className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" staggerInterval={100} distance={30}>
           {featuredTractors.map((tractor) => (
             <div
               key={tractor.id}
@@ -210,67 +222,73 @@ export default async function HomePage({ params }: HomePageProps) {
               </div>
             </div>
           ))}
-        </div>
+        </StaggerGroup>
       </section>
 
       {/* 4. FIELD WORK & FARMER DEMONSTRATIONS GALLERY */}
-      <GallerySection
-        items={galleryItems}
-        currentLocale={currentLocale}
-        representativeName={cms.representativeName}
-        phone={cms.phone}
-        maxItems={6}
-        showAllLink={true}
-      />
+      <ScrollReveal direction="up" distance={35}>
+        <GallerySection
+          items={galleryItems}
+          currentLocale={currentLocale}
+          representativeName={cms.representativeName}
+          phone={cms.phone}
+          maxItems={6}
+          showAllLink={true}
+        />
+      </ScrollReveal>
 
       {/* 5. ABOUT DAGIM MELESE: Simple & Professional */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-2xl border border-slate-200 p-8 sm:p-12">
-          <div className="max-w-3xl space-y-4">
-            <span className="text-xs font-bold uppercase tracking-wider text-tekhaf-700">
-              Professional Profile
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900">
-              About {cms.representativeName}
-            </h2>
-            <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
-              Dagim Melese represents Tekhaf Trading as a dedicated agricultural machinery sales consultant in Addis Ababa. Over the past 12 years, Dagim has advised agricultural cooperatives, private commercial estates, and emerging agribusinesses on tractor horsepower sizing, disc plough configurations, and maintenance routines.
-            </p>
-            <div className="pt-2 flex flex-wrap gap-4 text-xs font-semibold text-slate-700">
-              <div className="flex items-center gap-1.5">
-                <Shield className="w-4 h-4 text-tekhaf-700" />
-                <span>12+ Years Field Experience</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Shield className="w-4 h-4 text-tekhaf-700" />
-                <span>Tekhaf Trading Representative</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Shield className="w-4 h-4 text-tekhaf-700" />
-                <span>Comprehensive Technical Support</span>
+        <ScrollReveal direction="scale" distance={20} duration={800}>
+          <div className="bg-white rounded-2xl border border-slate-200 p-8 sm:p-12 shadow-xs">
+            <div className="max-w-3xl space-y-4">
+              <span className="text-xs font-bold uppercase tracking-wider text-tekhaf-700">
+                Professional Profile
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900">
+                About {cms.representativeName}
+              </h2>
+              <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
+                Dagim Melese represents Tekhaf Trading as a dedicated agricultural machinery sales consultant in Addis Ababa. Over the past 12 years, Dagim has advised agricultural cooperatives, private commercial estates, and emerging agribusinesses on tractor horsepower sizing, disc plough configurations, and maintenance routines.
+              </p>
+              <div className="pt-2 flex flex-wrap gap-4 text-xs font-semibold text-slate-700">
+                <div className="flex items-center gap-1.5">
+                  <Shield className="w-4 h-4 text-tekhaf-700" />
+                  <span>12+ Years Field Experience</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Shield className="w-4 h-4 text-tekhaf-700" />
+                  <span>Tekhaf Trading Representative</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Shield className="w-4 h-4 text-tekhaf-700" />
+                  <span>Comprehensive Technical Support</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </ScrollReveal>
       </section>
 
-      {/* 5. SIMPLE CONTACT INQUIRY SECTION */}
+      {/* 6. SIMPLE CONTACT INQUIRY SECTION */}
       <section id="contact" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-2xl border border-slate-200 p-8 sm:p-10 shadow-sm">
-          <div className="text-center max-w-lg mx-auto mb-8">
-            <h2 className="text-2xl font-black text-slate-900">
-              {dict.contactForm.title}
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-500 mt-1">
-              {dict.contactForm.subtitle}
-            </p>
-          </div>
+        <ScrollReveal direction="up" distance={35} duration={800}>
+          <div className="bg-white rounded-2xl border border-slate-200 p-8 sm:p-10 shadow-sm">
+            <div className="text-center max-w-lg mx-auto mb-8">
+              <h2 className="text-2xl font-black text-slate-900">
+                {dict.contactForm.title}
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                {dict.contactForm.subtitle}
+              </p>
+            </div>
 
-          <LeadCaptureForm
-            currentLocale={currentLocale}
-            sourceContext="Homepage Generic Inquiry Form"
-          />
-        </div>
+            <LeadCaptureForm
+              currentLocale={currentLocale}
+              sourceContext="Homepage Generic Inquiry Form"
+            />
+          </div>
+        </ScrollReveal>
       </section>
     </div>
   );

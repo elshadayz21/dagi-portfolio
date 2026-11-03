@@ -18,6 +18,7 @@ import {
   ChevronRight,
   ArrowUpDown,
 } from "lucide-react";
+import { ScrollReveal } from "./scroll-reveal";
 
 interface GallerySectionProps {
   items: GalleryItem[];
@@ -161,99 +162,106 @@ export function GallerySection({
 
       {/* Media Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {displayedItems.map((item) => {
+        {displayedItems.map((item, index) => {
           const isVideo = item.type === "VIDEO";
 
           return (
-            <div
+            <ScrollReveal
               key={item.id}
-              onClick={() => setSelectedItem(item)}
-              role="button"
-              tabIndex={0}
-              className="bg-white rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-xl transition-all overflow-hidden flex flex-col justify-between group cursor-pointer"
+              direction="up"
+              distance={28}
+              delay={(index % 6) * 90}
+              duration={700}
             >
-              <div>
-                {/* Media Thumbnail */}
-                <div className="relative aspect-video bg-slate-900 overflow-hidden">
-                  {isVideo ? (
-                    item.thumbnailUrl ? (
+              <div
+                onClick={() => setSelectedItem(item)}
+                role="button"
+                tabIndex={0}
+                className="bg-white rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-xl transition-all overflow-hidden flex flex-col justify-between group cursor-pointer h-full"
+              >
+                <div>
+                  {/* Media Thumbnail */}
+                  <div className="relative aspect-video bg-slate-900 overflow-hidden">
+                    {isVideo ? (
+                      item.thumbnailUrl ? (
+                        <img
+                          src={item.thumbnailUrl}
+                          alt={item.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      ) : (
+                        <video
+                          src={item.mediaUrl}
+                          className="w-full h-full object-cover opacity-80"
+                        />
+                      )
+                    ) : (
                       <img
-                        src={item.thumbnailUrl}
+                        src={item.mediaUrl}
                         alt={item.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
-                    ) : (
-                      <video
-                        src={item.mediaUrl}
-                        className="w-full h-full object-cover opacity-80"
-                      />
-                    )
-                  ) : (
-                    <img
-                      src={item.mediaUrl}
-                      alt={item.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  )}
+                    )}
 
-                  {/* Gradient Vignette */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
+                    {/* Gradient Vignette */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
 
-                  {/* Play Button Overlay for Video */}
-                  {isVideo && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-12 h-12 rounded-full bg-white/95 text-tekhaf-800 flex items-center justify-center shadow-2xl group-hover:scale-115 transition-transform">
-                        <Play className="w-5 h-5 fill-current ml-0.5 text-tekhaf-700" />
+                    {/* Play Button Overlay for Video */}
+                    {isVideo && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-full bg-white/95 text-tekhaf-800 flex items-center justify-center shadow-2xl group-hover:scale-115 transition-transform">
+                          <Play className="w-5 h-5 fill-current ml-0.5 text-tekhaf-700" />
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {/* Location & Region Badge */}
-                  <div className="absolute bottom-2.5 left-3 flex items-center gap-1 text-[11px] font-bold text-white drop-shadow">
-                    <MapPin className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                    <span>{item.location}</span>
+                    {/* Location & Region Badge */}
+                    <div className="absolute bottom-2.5 left-3 flex items-center gap-1 text-[11px] font-bold text-white drop-shadow">
+                      <MapPin className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      <span>{item.location}</span>
+                    </div>
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-4 space-y-2">
+                    {item.tractorModel && (
+                      <div className="flex items-center gap-1 text-[11px] font-bold text-tekhaf-700">
+                        <Tractor className="w-3.5 h-3.5 text-tekhaf-600 shrink-0" />
+                        <span className="truncate">{item.tractorModel}</span>
+                      </div>
+                    )}
+
+                    <h3 className="text-sm font-bold text-slate-900 group-hover:text-tekhaf-700 transition-colors line-clamp-1 leading-snug">
+                      {item.title}
+                    </h3>
+
+                    <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+                      {item.description}
+                    </p>
+
+                    {item.farmerName && (
+                      <div className="pt-2 border-t border-slate-100 flex items-center gap-1.5 text-[11px] text-slate-500">
+                        <User className="w-3 h-3 text-slate-400" />
+                        <span className="font-semibold text-slate-700 truncate">
+                          {item.farmerName}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                {/* Content */}
-                <div className="p-4 space-y-2">
-                  {item.tractorModel && (
-                    <div className="flex items-center gap-1 text-[11px] font-bold text-tekhaf-700">
-                      <Tractor className="w-3.5 h-3.5 text-tekhaf-600 shrink-0" />
-                      <span className="truncate">{item.tractorModel}</span>
-                    </div>
-                  )}
-
-                  <h3 className="text-sm font-bold text-slate-900 group-hover:text-tekhaf-700 transition-colors line-clamp-1 leading-snug">
-                    {item.title}
-                  </h3>
-
-                  <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
-                    {item.description}
-                  </p>
-
-                  {item.farmerName && (
-                    <div className="pt-2 border-t border-slate-100 flex items-center gap-1.5 text-[11px] text-slate-500">
-                      <User className="w-3 h-3 text-slate-400" />
-                      <span className="font-semibold text-slate-700 truncate">
-                        {item.farmerName}
-                      </span>
-                    </div>
-                  )}
+                {/* Card Footer CTA */}
+                <div className="p-3 bg-slate-50/70 border-t border-slate-100 flex items-center justify-between text-xs">
+                  <span className="text-tekhaf-700 font-bold text-[11px] flex items-center gap-1">
+                    <span>{isVideo ? "Watch Demonstration" : "View Photo"}</span>
+                    <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-mono">
+                    {new Date(item.createdAt).toLocaleDateString()}
+                  </span>
                 </div>
               </div>
-
-              {/* Card Footer CTA */}
-              <div className="p-3 bg-slate-50/70 border-t border-slate-100 flex items-center justify-between text-xs">
-                <span className="text-tekhaf-700 font-bold text-[11px] flex items-center gap-1">
-                  <span>{isVideo ? "Watch Demonstration" : "View Photo"}</span>
-                  <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
-                </span>
-                <span className="text-[10px] text-slate-400 font-mono">
-                  {new Date(item.createdAt).toLocaleDateString()}
-                </span>
-              </div>
-            </div>
+            </ScrollReveal>
           );
         })}
       </div>

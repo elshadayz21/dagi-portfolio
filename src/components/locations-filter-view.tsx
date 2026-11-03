@@ -18,6 +18,7 @@ import {
   MessageSquare,
   ArrowUpDown,
 } from "lucide-react";
+import { ScrollReveal } from "./scroll-reveal";
 
 interface LocationsFilterViewProps {
   currentLocale: Locale;
@@ -258,11 +259,15 @@ export function LocationsFilterView({
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredLocations.map((loc) => (
-            <div
+          {filteredLocations.map((loc, index) => (
+            <ScrollReveal
               key={loc.id}
-              className="bg-white rounded-3xl border border-slate-200/90 overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between group"
+              direction="up"
+              distance={28}
+              delay={(index % 6) * 80}
+              duration={700}
             >
+              <div className="bg-white rounded-3xl border border-slate-200/90 overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between group h-full">
               <div>
                 {/* Hero Photo Banner */}
                 <div className="relative h-48 bg-slate-100 overflow-hidden">
@@ -365,7 +370,8 @@ export function LocationsFilterView({
                 </div>
               </div>
             </div>
-          ))}
+          </ScrollReveal>
+        ))}
         </div>
       )}
     </div>
