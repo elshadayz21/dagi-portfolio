@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { dagimProfile } from "@/lib/data/profile";
+import { BackToTop } from "@/components/back-to-top";
 
 export default function AdminLayout({
   children,
@@ -165,6 +166,9 @@ export default function AdminLayout({
 
         {/* Child Content */}
         <main className="flex-1 p-6 sm:p-10 max-w-7xl w-full mx-auto">{children}</main>
+
+        {/* Go to top button */}
+        <BackToTop />
       </div>
     </div>
   );

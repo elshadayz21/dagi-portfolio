@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { FloatingSocials } from "@/components/floating-socials";
+import { BackToTop } from "@/components/back-to-top";
 import { Locale, locales } from "@/lib/i18n/config";
 import { getCMSData, getLiveTractors } from "@/lib/cms-store";
 import {
@@ -122,8 +123,17 @@ export default async function LocaleLayout({
         enabledLocales={cms.enabledLocales}
       />
 
-      {/* Floating Social Icons on the Left (WhatsApp, Telegram, LinkedIn, Phone, Email) */}
-      <FloatingSocials socials={cms.socials} />
+      {/* Floating Social Icons (Desktop Dock & Mobile Bottom-Left Widget) */}
+      <FloatingSocials
+        socials={cms.socials}
+        representativeName={cms.representativeName}
+        phoneDisplay={cms.phoneDisplay}
+        phone={cms.phone}
+        phones={cms.phones}
+      />
+
+      {/* Go To Top Button for Both Big Screen and Small Screen */}
+      <BackToTop />
 
       {/* Main Content */}
       <main className="flex-1">{children}</main>
