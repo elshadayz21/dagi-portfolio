@@ -146,6 +146,11 @@ export function Footer({
                 </Link>
               </li>
               <li>
+                <Link href={`/${currentLocale}/gallery`} className="hover:text-white transition-colors">
+                  {dict.nav.gallery}
+                </Link>
+              </li>
+              <li>
                 <Link href={`/${currentLocale}/about`} className="hover:text-white transition-colors">
                   {dict.nav.about}
                 </Link>

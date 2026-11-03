@@ -102,6 +102,7 @@ export function Navbar({
   const navLinks = [
     { href: `/${currentLocale}`, label: dict.nav.home },
     { href: `/${currentLocale}/products`, label: dict.nav.tractors },
+    { href: `/${currentLocale}/gallery`, label: dict.nav.gallery },
     { href: `/${currentLocale}/about`, label: dict.nav.about },
     { href: `/${currentLocale}/service-areas`, label: dict.nav.serviceAreas },
     { href: `/${currentLocale}/contact`, label: dict.nav.contact },

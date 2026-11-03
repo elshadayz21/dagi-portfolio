@@ -22,6 +22,7 @@ export interface Dictionary {
   nav: {
     home: string;
     tractors: string;
+    gallery: string;
     about: string;
     serviceAreas: string;
     contact: string;
@@ -85,6 +86,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     nav: {
       home: "Home",
       tractors: "Tractors",
+      gallery: "Field Gallery",
       about: "About",
       serviceAreas: "Locations",
       contact: "Contact",
@@ -146,6 +148,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     nav: {
       home: "ዋና ገጽ",
       tractors: "ትራክተሮች",
+      gallery: "የሜዳ ስራዎች",
       about: "ስለ ዳግም",
       serviceAreas: "የአገልግሎት ክልሎች",
       contact: "ያነጋግሩ",
@@ -207,6 +210,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     nav: {
       home: "Fuula Duraa",
       tractors: "Tiraakteroota",
+      gallery: "Gaaleerii Dirree",
       about: "Waa'ee",
       serviceAreas: "Bakkeewwan",
       contact: "Qunnamtii",
@@ -268,6 +272,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     nav: {
       home: "Bogga Hore",
       tractors: "Cagafyada",
+      gallery: "Sawirrada Beeraha",
       about: "Ku Saabsan",
       serviceAreas: "Goobaha",
       contact: "Xiriir",
@@ -329,6 +334,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     nav: {
       home: "Hanafo",
       tractors: "Tiraakiterre",
+      gallery: "Loosu Gaaleere",
       about: "Daafira",
       serviceAreas: "Qooxe",
       contact: "Hasaawisiisa",

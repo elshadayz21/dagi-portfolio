@@ -3,8 +3,10 @@ import Link from "next/link";
 import { Locale, locales } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { getCMSData, getLiveTractors } from "@/lib/cms-store";
+import { getAllGalleryItems } from "@/lib/gallery-store";
 import { LeadCaptureForm } from "@/components/lead-capture-form";
 import { InquiryModal } from "@/components/inquiry-modal";
+import { GallerySection } from "@/components/gallery-section";
 import {
   Tractor,
   Phone,
@@ -29,6 +31,7 @@ export default async function HomePage({ params }: HomePageProps) {
   const cms = await getCMSData();
   const allTractors = (await getLiveTractors()) || [];
   const featuredTractors = allTractors.slice(0, 4);
+  const galleryItems = (await getAllGalleryItems()) || [];
 
   return (
     <div className="space-y-16 sm:space-y-24 pb-16">
@@ -210,7 +213,17 @@ export default async function HomePage({ params }: HomePageProps) {
         </div>
       </section>
 
-      {/* 4. ABOUT DAGIM MELESE: Simple & Professional */}
+      {/* 4. FIELD WORK & FARMER DEMONSTRATIONS GALLERY */}
+      <GallerySection
+        items={galleryItems}
+        currentLocale={currentLocale}
+        representativeName={cms.representativeName}
+        phone={cms.phone}
+        maxItems={6}
+        showAllLink={true}
+      />
+
+      {/* 5. ABOUT DAGIM MELESE: Simple & Professional */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white rounded-2xl border border-slate-200 p-8 sm:p-12">
           <div className="max-w-3xl space-y-4">

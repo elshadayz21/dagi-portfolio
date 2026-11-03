@@ -1,5 +1,14 @@
 [
   {
+    "id": "cat-1793690843437-euonf",
+    "name": "assadsadA",
+    "slug": "new-cat",
+    "type": "PRODUCT",
+    "description": "22",
+    "isDefault": false,
+    "createdAt": "2026-11-03T07:27:23.437Z"
+  },
+  {
     "id": "cat-heavy-4wd",
     "name": "Heavy-Duty 4WD Tractors",
     "slug": "heavy-duty-4wd-tractors",

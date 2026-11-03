@@ -9,6 +9,9 @@ export interface ActivityLogItem {
     | "MEDIA_UPLOADED"
     | "MEDIA_UPDATED"
     | "MEDIA_DELETED"
+    | "GALLERY_ITEM_ADDED"
+    | "GALLERY_ITEM_UPDATED"
+    | "GALLERY_ITEM_DELETED"
     | "LOGO_UPDATED"
     | "PROFILE_UPDATED"
     | "PRODUCT_ADDED"
@@ -18,7 +21,7 @@ export interface ActivityLogItem {
     | "CATEGORY_UPDATED"
     | "CATEGORY_DELETED"
     | "TRANSLATION_UPDATED";
-  category: "LEADS" | "MEDIA" | "BRAND" | "PRODUCTS" | "SYSTEM";
+  category: "LEADS" | "MEDIA" | "GALLERY" | "BRAND" | "PRODUCTS" | "SYSTEM";
   title: string;
   details: string;
   actor: string;
