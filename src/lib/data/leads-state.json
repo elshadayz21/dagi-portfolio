@@ -1,0 +1,104 @@
+[
+  {
+    "id": "lead-101",
+    "fullName": "Abebe Girmay",
+    "email": "abebe.farms@gmail.com",
+    "phone": "+251911458921",
+    "region": "Oromia (Arsi - Asella)",
+    "farmSizeHectares": 45,
+    "productTitle": "Massey Ferguson MF 385 (4WD, 85 HP)",
+    "message": "We need 2 units of MF 385 4WD with 4-disc ploughs before the rainy season. Please provide proforma invoice for bank loan application.",
+    "status": "PENDING",
+    "source": "Tractor Details Page (/products/massey-ferguson-385-4wd)",
+    "createdAt": "2026-11-03T04:14:34.020Z",
+    "notes": [
+      {
+        "id": "note-1793690131902-56eq",
+        "author": "Dagim Melese",
+        "content": "I have contacted this person, it is pending bank loan approval. [1793690131865]",
+        "statusAtUpdate": "PENDING",
+        "createdAt": "2026-11-03T07:15:31.902Z"
+      },
+      {
+        "id": "note-1793690074998-7x8g",
+        "author": "Dagim Melese",
+        "content": "Automated Test Note: Contacted person - pending CBE loan approval [1793690074748]",
+        "statusAtUpdate": "PENDING",
+        "createdAt": "2026-11-03T07:14:34.998Z"
+      },
+      {
+        "id": "note-1",
+        "author": "Dagim Melese",
+        "content": "I have contacted this person, it is pending bank loan approval from Awash Bank. Customer requested 5% cooperative implement discount.",
+        "statusAtUpdate": "PENDING",
+        "createdAt": "2026-11-03T05:14:34.021Z"
+      }
+    ]
+  },
+  {
+    "id": "lead-102",
+    "fullName": "Taye Dejene",
+    "email": "taye.dejene@yahoo.com",
+    "phone": "+251922334455",
+    "region": "Sidama (Hawassa)",
+    "farmSizeHectares": 25,
+    "productTitle": "Lovol TB754 Heavy-Duty Tractor (4WD, 75 HP)",
+    "message": "Interested in the 75 HP Lovol with trailer for maize and coffee farm haulage to Hawassa. Can we inspect the machine in Addis Ababa this Friday?",
+    "status": "CONTACTED",
+    "source": "Service Areas (/tractors-sidama)",
+    "createdAt": "2026-11-02T17:14:34.021Z",
+    "notes": [
+      {
+        "id": "note-2",
+        "author": "Dagim Melese",
+        "content": "Spoke with customer by phone. Scheduled machinery yard inspection at Kaliti depot for Friday at 10:00 AM.",
+        "statusAtUpdate": "CONTACTED",
+        "createdAt": "2026-11-02T19:14:34.021Z"
+      }
+    ]
+  },
+  {
+    "id": "lead-103",
+    "fullName": "Mukhtar Farah",
+    "email": "mukhtar.f@somali-agri.org",
+    "phone": "+251944112233",
+    "region": "Somali Region (Gode)",
+    "farmSizeHectares": 120,
+    "productTitle": "Lovol TD904 Heavy Tractor with A/C Cabin (4WD, 90 HP)",
+    "message": "Large-scale onion and watermelon irrigation project along Wabe Shebelle. Need 90 HP tractor with air conditioning cabin due to heat.",
+    "status": "NEGOTIATING",
+    "source": "Local SEO (/tractors-somali-region)",
+    "createdAt": "2026-11-01T07:14:34.021Z",
+    "notes": [
+      {
+        "id": "note-3",
+        "author": "Dagim Melese",
+        "content": "Sent formal proforma via WhatsApp. Negotiating flatbed delivery logistics and pre-delivery inspection timeline.",
+        "statusAtUpdate": "NEGOTIATING",
+        "createdAt": "2026-11-02T07:14:34.021Z"
+      }
+    ]
+  },
+  {
+    "id": "lead-104",
+    "fullName": "Kebede Wolde",
+    "email": "kebede.wolde@ethiopianfarms.com",
+    "phone": "+251912889900",
+    "region": "Amhara Region (Debre Birhan)",
+    "farmSizeHectares": 35,
+    "productTitle": "New Holland TT75 (4WD, 75 HP Turbo)",
+    "message": "Looking for fuel efficient tractor for barley and wheat. Heard great things about New Holland TT75.",
+    "status": "WON",
+    "source": "Homepage Quote Form",
+    "createdAt": "2026-10-30T07:14:34.021Z",
+    "notes": [
+      {
+        "id": "note-4",
+        "author": "Dagim Melese",
+        "content": "Deal closed successfully. Full payment cleared. Dispatched tractor with technician to Debre Birhan for field handover.",
+        "statusAtUpdate": "WON",
+        "createdAt": "2026-10-31T09:14:34.021Z"
+      }
+    ]
+  }
+]

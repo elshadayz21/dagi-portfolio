@@ -27,7 +27,15 @@ export default async function AdminDashboardPage() {
   const newLeads = leads.filter((l) => l.status === "NEW").length;
   const wonLeads = leads.filter((l) => l.status === "WON").length;
   const negotiatingLeads = leads.filter((l) => l.status === "NEGOTIATING").length;
-  const contactedLeads = leads.filter((l) => l.status === "CONTACTED" || l.status === "INTERESTED" || l.status === "NEGOTIATING" || l.status === "WON").length;
+  const pendingLeads = leads.filter((l) => l.status === "PENDING").length;
+  const contactedLeads = leads.filter(
+    (l) =>
+      l.status === "CONTACTED" ||
+      l.status === "PENDING" ||
+      l.status === "INTERESTED" ||
+      l.status === "NEGOTIATING" ||
+      l.status === "WON"
+  ).length;
   const liveTractors = await getLiveTractors();
   const inStockTractors = liveTractors.filter((t) => t.availability === "IN_STOCK").length;
 
@@ -124,7 +132,7 @@ export default async function AdminDashboardPage() {
         <h2 className="text-base font-bold text-slate-900 mb-4">
           Active Sales Pipeline Stages
         </h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5">
           <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-center">
             <span className="text-[11px] font-bold text-amber-800 uppercase block">New</span>
             <span className="text-xl font-black text-amber-900">{newLeads}</span>
@@ -134,6 +142,10 @@ export default async function AdminDashboardPage() {
             <span className="text-xl font-black text-blue-900">
               {leads.filter((l) => l.status === "CONTACTED").length}
             </span>
+          </div>
+          <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-300 text-center">
+            <span className="text-[11px] font-bold text-amber-900 uppercase block">Pending</span>
+            <span className="text-xl font-black text-amber-900">{pendingLeads}</span>
           </div>
           <div className="p-3 rounded-xl bg-indigo-50 border border-indigo-200 text-center">
             <span className="text-[11px] font-bold text-indigo-800 uppercase block">Interested</span>
@@ -197,10 +209,16 @@ export default async function AdminDashboardPage() {
                         className={`text-[10px] font-bold px-2 py-0.5 rounded ${
                           lead.status === "NEW"
                             ? "bg-amber-100 text-amber-800"
+                            : lead.status === "PENDING"
+                            ? "bg-amber-200 text-amber-900 border border-amber-300"
                             : lead.status === "WON"
                             ? "bg-emerald-100 text-emerald-800"
                             : lead.status === "NEGOTIATING"
                             ? "bg-purple-100 text-purple-800"
+                            : lead.status === "INTERESTED"
+                            ? "bg-indigo-100 text-indigo-800"
+                            : lead.status === "CONTACTED"
+                            ? "bg-blue-100 text-blue-800"
                             : "bg-slate-100 text-slate-700"
                         }`}
                       >

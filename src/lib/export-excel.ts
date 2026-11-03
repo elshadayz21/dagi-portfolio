@@ -18,7 +18,7 @@ export function generateExcelWorkbook(leads: LeadRecord[], sheetName = "Contacte
   const rowsXml = leads
     .map((lead, idx) => {
       const notesSummary = lead.notes && lead.notes.length > 0
-        ? lead.notes.map((n) => `[${n.author}]: ${n.content}`).join(" | ")
+        ? lead.notes.map((n) => `[${n.author}${n.statusAtUpdate ? ` - ${n.statusAtUpdate}` : ""}]: ${n.content}`).join(" | ")
         : "None";
 
       const formattedDate = new Date(lead.createdAt).toISOString().split("T")[0];
@@ -164,7 +164,7 @@ export function generateExcelCSV(leads: LeadRecord[]): string {
 
   const rows = leads.map((l) => {
     const notesSummary = l.notes && l.notes.length > 0
-      ? l.notes.map((n) => `[${n.author}]: ${n.content}`).join(" | ")
+      ? l.notes.map((n) => `[${n.author}${n.statusAtUpdate ? ` - ${n.statusAtUpdate}` : ""}]: ${n.content}`).join(" | ")
       : "";
 
     return [

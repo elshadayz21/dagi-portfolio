@@ -4,6 +4,8 @@ export interface ActivityLogItem {
     | "LEAD_RECEIVED"
     | "LEAD_STATUS_CHANGED"
     | "LEAD_NOTE_ADDED"
+    | "LEAD_NOTE_DELETED"
+    | "LEAD_DELETED"
     | "MEDIA_UPLOADED"
     | "MEDIA_UPDATED"
     | "MEDIA_DELETED"
